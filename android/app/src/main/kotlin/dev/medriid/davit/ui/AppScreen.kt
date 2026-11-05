@@ -104,6 +104,7 @@ import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Seal
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 internal val Gutter = 18.dp
 
@@ -494,7 +495,7 @@ internal fun ago(at: Long): String {
     LaunchedEffect(at) {
         while (true) {
             now = System.currentTimeMillis()
-            delay(60_000)
+            delay(60_000.milliseconds.milliseconds)
         }
     }
     val min = (now - at) / 60_000

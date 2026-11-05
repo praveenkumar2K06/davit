@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * List entrance: the [index]th item prints in after a short stagger, rising a few dp and
@@ -53,7 +54,7 @@ fun Modifier.printIn(index: Int): Modifier = composed {
     val t = remember { Animatable(if (motion) 0f else 1f) }
     LaunchedEffect(Unit) {
         if (!motion) return@LaunchedEffect
-        delay(index.coerceIn(0, 10) * 38L)
+        delay((index.coerceIn(0, 10) * 38L).milliseconds)
         t.animateTo(1f, spring(dampingRatio = 0.72f, stiffness = 320f))
     }
     graphicsLayer {

@@ -37,6 +37,7 @@ import dev.medriid.davit.vtop.FacultyHit
 import dev.medriid.davit.vtop.FacultyInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /** What VTOP's faculty search is sent for [query]: letters and single spaces, lower case. */
 internal fun facultyQuery(query: String): String =
@@ -55,7 +56,7 @@ internal fun VtopFacultySearch(query: String) {
     val results = remember { mutableStateMapOf<String, Result<List<FacultyHit>>>() }
     LaunchedEffect(q) {
         if (q in results) return@LaunchedEffect
-        delay(650)
+        delay(650.milliseconds)
         results[q] = runCatching { repo.onVtop { c -> c.searchFaculty(q) } }
     }
     SectionTitle("Anyone on VTOP")
