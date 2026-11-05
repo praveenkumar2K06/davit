@@ -79,6 +79,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Today: what you need to know right now, most pressing first. Your class now and next
@@ -109,7 +110,7 @@ internal fun TodayTab(
     var now by remember { mutableStateOf(LocalDateTime.now()) }
     LaunchedEffect(Unit) {
         while (true) {
-            delay(15_000)
+            delay(15_000.milliseconds)
             now = LocalDateTime.now()
         }
     }

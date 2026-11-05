@@ -97,6 +97,7 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.IsoFields
 import java.util.Locale
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 // The Editorial look's own layouts: Swiss modernism on a phone. A masthead, a strict
 // two-column grid of tiles that are alive (they count up, turn over, tilt under your finger)
@@ -603,7 +604,7 @@ private fun MarksTicker(snapshot: Snapshot) {
     LaunchedEffect(marks, motion) {
         if (!motion || marks.size < 2) return@LaunchedEffect
         while (true) {
-            delay(3200)
+            delay(3200.milliseconds)
             i = (i + 1) % marks.size
         }
     }
@@ -669,7 +670,7 @@ private fun Reveal(index: Int, modifier: Modifier = Modifier, content: @Composab
     val shown = remember { Animatable(if (motion) 0f else 1f) }
     LaunchedEffect(Unit) {
         if (!motion) return@LaunchedEffect
-        delay(60L * index)
+        delay((60L * index).milliseconds)
         shown.animateTo(1f, spring(dampingRatio = 0.8f, stiffness = 260f))
     }
     Box(modifier.graphicsLayer { alpha = shown.value; translationY = (1f - shown.value) * 40f * density }) { content() }

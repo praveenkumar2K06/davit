@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Overprinted display text (`.over` in tokens.css): a solid ink-A plate, with an ink-B
@@ -62,7 +63,7 @@ fun Overprint(
             return@LaunchedEffect
         }
         plate.snapTo(from)
-        delay(200)
+        delay(200.milliseconds)
         plate.animateTo(rest, RisoMotion.register())
     }
 

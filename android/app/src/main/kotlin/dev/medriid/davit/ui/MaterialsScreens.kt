@@ -108,6 +108,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 // ---- Academics → Materials -------------------------------------------------------------
 
@@ -508,7 +509,7 @@ internal fun SearchScreen(route: Route) {
     LaunchedEffect(hits.isNotEmpty() && query.isNotBlank()) {
         // A search that found something is worth remembering, even if Done wasn't pressed.
         if (hits.isNotEmpty() && query.isNotBlank()) {
-            kotlinx.coroutines.delay(1500)
+            kotlinx.coroutines.delay(1500.milliseconds)
             repo.materials.remember(query)
         }
     }

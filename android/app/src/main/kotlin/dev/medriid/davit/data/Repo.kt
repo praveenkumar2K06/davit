@@ -29,6 +29,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 
 data class UiState(
     val signedIn: Boolean = false,
@@ -304,7 +305,7 @@ class Repo(private val context: Context) {
         // This runs on every keystroke; the phone's calendar waits for the typing to stop.
         renaming?.cancel()
         renaming = scope.launch {
-            kotlinx.coroutines.delay(2_000)
+            kotlinx.coroutines.delay(2_000.milliseconds)
             state.value.snapshot?.let { PhoneCalendar.refresh(context, it.classEvents(java.time.LocalDate.now()), _state.value.palette.inks(false).a.toArgb()) }
         }
     }
