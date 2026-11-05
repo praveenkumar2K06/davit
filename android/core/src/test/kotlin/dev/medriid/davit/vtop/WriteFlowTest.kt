@@ -118,7 +118,7 @@ class WriteFlowTest {
         val again = c.submitUploadOtp(consent, pending, " 123456 ", "CP") as UploadOutcome.NeedsOtp
         assertEquals("Invalid OTP. Please try again.", again.error)
         val otpBody = bodies[seen.indexOfFirst { it.path!!.endsWith("doDAssignmentOtpUpload") }]
-        assertTrue("name=\"otpEmail\"\r\nContent-Length: 6\r\n\r\n123456" in otpBody)
+        assertTrue("name=\"otpEmail\"\r\n\r\n123456" in otpBody)
 
         otpReply = "upload_done.html"
         assertEquals(UploadOutcome.Uploaded("28 Oct 2026 11:36 PM"), c.submitUploadOtp(consent, again, "654321", "CP"))
@@ -149,7 +149,7 @@ class WriteFlowTest {
         )
         assertTrue(reply.ok)
         val sent = bodies[seen.indexOfFirst { it.path!!.endsWith("request/3") }]
-        listOf("venue=TT", "purpose=Project%20work", "fromTime=20%3A30", "studentId=10077", "form=LateHourRequestForm", "control=submitRequest", "_csrf=")
+        listOf("venue=TT", "purpose=Project+work", "fromTime=20%3A30", "studentId=10077", "form=LateHourRequestForm", "control=submitRequest", "_csrf=")
             .forEach { assertTrue("missing $it in $sent", it in sent) }
     }
 
@@ -196,7 +196,7 @@ class WriteFlowTest {
         val sent = bodies[seen.indexOfFirst { it.path!!.endsWith("StudentBonafideSave") }]
         assertTrue(seen.first { it.path!!.endsWith("StudentBonafideSave") }.getHeader("Content-Type")!!.startsWith("multipart/form-data"))
         listOf("certificateCode" to "3", "visaPlace" to "Example City", "description" to "For a family trip", "fromDate" to "20-Dec-2026", "_csrf" to "CSRF")
-            .forEach { (k, v) -> assertTrue("missing $k=$v", Regex("name=\"$k\"\r\nContent-Length: \\d+\r\n\r\n${Regex.escape(v)}").containsMatchIn(sent)) }
+            .forEach { (k, v) -> assertTrue("missing $k=$v", Regex("name=\"$k\"\r\n\r\n${Regex.escape(v)}").containsMatchIn(sent)) }
     }
 
     @Test
@@ -204,7 +204,7 @@ class WriteFlowTest {
         val c = client()
         assertTrue(c.submitClassFeedback(consent, "VL20262701", "VL2026270100101", "  Worked examples before each lab helped.  ").ok)
         val sent = bodies[seen.indexOfFirst { it.path!!.endsWith("saveAcademicsCourseFeedback") }]
-        listOf("semesterSubId=VL20262701", "classId=VL2026270100101", "courseFeedbackVal=Worked%20examples%20before%20each%20lab%20helped.")
+        listOf("semesterSubId=VL20262701", "classId=VL2026270100101", "courseFeedbackVal=Worked+examples+before+each+lab+helped.")
             .forEach { assertTrue("missing $it in $sent", it in sent) }
         for ((id, text) in listOf("VL2026270100190" to "Again", "VL2026270100101" to "x".repeat(101), "VL2026270100101" to " ")) {
             try {
@@ -250,7 +250,7 @@ class WriteFlowTest {
         assertTrue(c.sendMessComplaint(consent, " Rice was cold at dinner ", "plate.jpg", "image/jpeg", "JPEGDATA".toByteArray()).ok)
         val sent = bodies[seen.indexOfFirst { it.path!!.endsWith("messComplaint/save") }]
         assertTrue(seen.first { it.path!!.endsWith("messComplaint/save") }.getHeader("Content-Type")!!.startsWith("multipart/form-data"))
-        assertTrue("name=\"complaintData\"\r\nContent-Length: 23\r\n\r\nRice was cold at dinner" in sent)
+        assertTrue("name=\"complaintData\"\r\n\r\nRice was cold at dinner" in sent)
         assertTrue("name=\"complaintFile\"; filename=\"plate.jpg\"" in sent && "JPEGDATA" in sent)
         assertEquals(1, seen.count { it.path!!.endsWith("messComplaint/save") })
     }

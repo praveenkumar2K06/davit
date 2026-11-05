@@ -18,6 +18,7 @@ kotlin {
 }
 
 dependencies {
+    compileOnly(libs.jspecify)
     api(libs.okhttp)
     implementation(libs.jsoup)
     api(libs.kotlinx.serialization.json)
