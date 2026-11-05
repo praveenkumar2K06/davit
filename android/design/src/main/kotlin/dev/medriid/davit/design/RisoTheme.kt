@@ -1,5 +1,6 @@
 package dev.medriid.davit.design
 
+import android.os.Build
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -9,13 +10,62 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.platform.LocalContext
+
 /** Provides the ink pair to everything below. Wrap the root in [Grain] for paper + grain. */
 @Composable
 fun RisoTheme(inks: Inks = InkPairs.all.first(), content: @Composable () -> Unit) {
     // The type follows the look; set before anything below composes.
     RisoType.soft = inks.soft
     RisoType.editorial = inks.editorial
-    CompositionLocalProvider(LocalInks provides inks, content = content)
+    RisoType.material = inks.material
+
+    if (inks.material) {
+        val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        val colorScheme = if (inks.dark) {
+            if (dynamicColor) {
+                dynamicDarkColorScheme(LocalContext.current)
+            } else {
+                darkColorScheme(
+                    primary = inks.a,
+                    onPrimary = inks.onA,
+                    surface = inks.paper,
+                    onSurface = inks.text,
+                    surfaceVariant = inks.surface,
+                    onSurfaceVariant = inks.text,
+                    outline = inks.rule,
+                )
+            }
+        } else {
+            if (dynamicColor) {
+                dynamicLightColorScheme(LocalContext.current)
+            } else {
+                lightColorScheme(
+                    primary = inks.a,
+                    onPrimary = inks.onA,
+                    surface = inks.paper,
+                    onSurface = inks.text,
+                    surfaceVariant = inks.surface,
+                    onSurfaceVariant = inks.text,
+                    outline = inks.rule,
+                )
+            }
+        }
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = {
+                CompositionLocalProvider(LocalInks provides inks, content = content)
+            },
+        )
+    } else {
+        CompositionLocalProvider(LocalInks provides inks, content = content)
+    }
 }
 
 /**
@@ -33,11 +83,24 @@ fun InkText(
 ) {
     val inks = LocalInks.current
     val onCard = LocalOnCard.current
+
+    if (inks.material) {
+        Text(
+            if (label) text.uppercase() else text,
+            modifier = modifier,
+            // A colour the caller set (an accent, a muted caption) wins; otherwise the text ink.
+            style = style.copy(color = if (onCard) MaterialTheme.colorScheme.onPrimary else if (style.color != Color.Unspecified) style.color else inks.text),
+            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis,
+        )
+        return
+    }
+
     BasicText(
         if (label) text.uppercase() else text,
         modifier = if (onCard) modifier.multiply() else modifier,
         // A colour the caller set (an accent, a muted caption) wins; otherwise the text ink.
-        style = style.copy(color = if (onCard) inks.b else if (style.color != androidx.compose.ui.graphics.Color.Unspecified) style.color else inks.text),
+        style = style.copy(color = if (onCard) inks.b else if (style.color != Color.Unspecified) style.color else inks.text),
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
     )
@@ -54,13 +117,16 @@ fun Heading(
     modifier: Modifier = Modifier,
     color: Color = LocalInks.current.b,
     uppercase: Boolean = true,
+    onCard: Boolean = false,
 ) {
     // Soft: plain sans in sentence case, in the text colour.
-    val soft = LocalInks.current.soft || LocalInks.current.editorial
+    val soft = LocalInks.current.soft || LocalInks.current.editorial || LocalInks.current.material
+
+    val isMaterial = LocalInks.current.material
     BasicText(
         if (uppercase && !soft) text.uppercase() else text,
         modifier = if (soft) modifier else modifier.trimToCaps(fontSize).multiply(),
-        style = RisoType.display(fontSize).copy(color = if (soft) LocalInks.current.text else color),
+        style = RisoType.display(fontSize).copy(color = if(isMaterial && onCard) MaterialTheme.colorScheme.onPrimary else if (soft) LocalInks.current.text else color),
         overflow = TextOverflow.Visible,
     )
 }

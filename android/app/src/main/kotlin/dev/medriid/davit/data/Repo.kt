@@ -216,18 +216,41 @@ class Repo(private val context: Context) {
     fun setInk(index: Int) = setPalette(Palette(base = index, tinted = _state.value.palette.tinted))
 
     /**
-     * Classic (the print looks, in the colours you chose) or Editorial. Your Classic colours
-     * are kept while you try Editorial, and come back when you switch back.
+     * Changes visual theme style (Classic, Soft, Editorial, Material 3, Glass).
+     * Your Classic colours are kept while you try other styles, and restored when you return to Classic.
      */
-    fun setEditorial(on: Boolean) {
+    fun setStyle(style: dev.medriid.davit.design.AppStyle) {
         val now = _state.value.palette
-        if (on == InkPairs.of(now.base, false).editorial) return
-        if (on) {
+        val currentPair = InkPairs.of(now.base, false)
+        val currentStyle = currentPair.style
+
+        if (currentStyle == style) return
+
+        if (currentStyle == dev.medriid.davit.design.AppStyle.Classic) {
             prefs.edit().putString(K_CLASSIC, now.toJson()).apply()
-            setPalette(Palette(base = InkPairs.editorialIndex, tinted = now.tinted))
-        } else {
-            setPalette(Palette.fromJson(prefs.getString(K_CLASSIC, null)) ?: Palette(base = 0, tinted = now.tinted))
         }
+
+        if (style == dev.medriid.davit.design.AppStyle.Classic) {
+            val saved = Palette.fromJson(prefs.getString(K_CLASSIC, null))
+            val restored = if (saved != null && saved.base in InkPairs.classic) {
+                saved.copy(tinted = now.tinted)
+            } else {
+                Palette(base = 0, tinted = now.tinted)
+            }
+            setPalette(restored)
+        } else {
+            val targetIndex = when (style) {
+                dev.medriid.davit.design.AppStyle.Soft -> InkPairs.softIndex
+                dev.medriid.davit.design.AppStyle.Editorial -> InkPairs.editorialIndex
+                dev.medriid.davit.design.AppStyle.Material3 -> InkPairs.materialIndex
+                dev.medriid.davit.design.AppStyle.Glass -> InkPairs.glassIndex
+            }
+            setPalette(Palette(base = targetIndex, tinted = now.tinted))
+        }
+    }
+
+    fun setEditorial(on: Boolean) {
+        setStyle(if (on) dev.medriid.davit.design.AppStyle.Editorial else dev.medriid.davit.design.AppStyle.Classic)
     }
 
     /** Shows [p] everywhere while you drag the colour wheel, without saving it; [setPalette] keeps it. */
@@ -673,7 +696,7 @@ class Repo(private val context: Context) {
             val settled = signature != null && old != null && old.semester.id == semester.id && old.assignments.isNotEmpty() &&
                 signature == old.feeds.assignmentSig && System.currentTimeMillis() - old.feeds.assignmentsAt < 6 * 3_600_000L
             if (settled) {
-                full = full.copy(assignments = old!!.assignments, feeds = full.feeds.copy(assignmentSig = old.feeds.assignmentSig, assignmentsAt = old.feeds.assignmentsAt))
+                full = full.copy(assignments = old.assignments, feeds = full.feeds.copy(assignmentSig = old.feeds.assignmentSig, assignmentsAt = old.feeds.assignmentsAt))
             } else {
                 val read = section("Fetching assignments", "assignments", creds, full) { client.assignments(semester.id) }
                 full = full.copy(
@@ -736,7 +759,7 @@ class Repo(private val context: Context) {
 
             // The academic calendar from VTOP, for your class group (freshers' Saturdays differ),
             // every few days; if VTOP's fails, the last one read stays.
-            if (full.calendar?.semesterId != semester.id || full.calendar?.group.isNullOrEmpty() || now - full.calendarAt > 3 * 24 * 3_600_000L) {
+            if (full.calendar?.semesterId != semester.id || full.calendar.group.isNullOrEmpty() || now - full.calendarAt > 3 * 24 * 3_600_000L) {
                 _state.update { it.copy(snapshot = full, busy = "Fetching calendar") }
                 val cal = section("Fetching calendar", "calendar", creds, full) { vtopCalendar(semester.id, full) }
                 cal?.let { full = full.copy(calendar = it, calendarAt = now) }

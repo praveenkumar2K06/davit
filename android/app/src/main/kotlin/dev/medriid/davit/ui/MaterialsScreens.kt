@@ -36,6 +36,9 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -70,6 +73,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.text.Text
 import dev.medriid.davit.data.CachedCourse
 import dev.medriid.davit.data.courseName
 import dev.medriid.davit.data.FilterOption
@@ -80,17 +84,21 @@ import dev.medriid.davit.data.MaterialsStore
 import dev.medriid.davit.data.Section
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.searchMaterials
+import dev.medriid.davit.design.AppStyle
 import dev.medriid.davit.design.CardShape
 import dev.medriid.davit.design.EditorialShape
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
+import dev.medriid.davit.design.InkField
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.Inks
 import dev.medriid.davit.design.LocalInks
+import dev.medriid.davit.design.MaterialShape
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
+import dev.medriid.davit.design.SearchGlyph
 import dev.medriid.davit.design.printIn
 import dev.medriid.davit.design.rememberHaptics
 import dev.medriid.davit.design.rememberMotionEnabled
@@ -170,6 +178,28 @@ private fun CourseCard(c: CourseOption, name: String, cached: CachedCourse?, min
 @Composable
 private fun SearchLauncher(modifier: Modifier, onClick: () -> Unit) {
     val inks = LocalInks.current
+
+    if (inks.style == AppStyle.Material3) {
+        Row(
+            modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 54.dp)
+                .clip(MaterialShape)
+                .background(TextFieldDefaults.colors().unfocusedContainerColor)
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SearchGlyph()
+            Spacer(Modifier.width(10.dp))
+            InkText(
+                "Search every course's materials",
+                style = RisoType.body.copy(color = TextFieldDefaults.colors().unfocusedLabelColor)
+            )
+        }
+        return
+    }
+
     Row(
         modifier
             .fillMaxWidth()
@@ -184,16 +214,6 @@ private fun SearchLauncher(modifier: Modifier, onClick: () -> Unit) {
         SearchGlyph()
         Spacer(Modifier.width(10.dp))
         InkText("Search every course's materials", style = RisoType.body.copy(color = inks.rule))
-    }
-}
-
-@Composable
-private fun SearchGlyph() {
-    val inks = LocalInks.current
-    androidx.compose.foundation.Canvas(Modifier.width(20.dp).height(20.dp)) {
-        val w = 2.2.dp.toPx()
-        drawCircle(inks.text, size.minDimension * 0.32f, androidx.compose.ui.geometry.Offset(size.width * 0.42f, size.height * 0.42f), style = androidx.compose.ui.graphics.drawscope.Stroke(w))
-        drawLine(inks.text, androidx.compose.ui.geometry.Offset(size.width * 0.66f, size.height * 0.66f), androidx.compose.ui.geometry.Offset(size.width * 0.92f, size.height * 0.92f), w, androidx.compose.ui.graphics.StrokeCap.Round)
     }
 }
 
@@ -393,10 +413,10 @@ internal fun SearchScreen(route: Route) {
         (loading.size.takeIf { it > 0 }?.let { " · fetching $it more" } ?: "")) {
         item(key = "field") {
             Column {
-                SearchField(query, { query = it }, onDone = {
+                InkField(query, { query = it }, "Search every course's materials", search = true ,keyboardActions = KeyboardActions(onDone = {
                     repo.materials.remember(query)
                     keyboard?.hide()
-                })
+                }))
                 Spacer(Modifier.height(10.dp))
                 // Your faculty and Saved are one tap away; the rest lives behind the button.
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

@@ -116,7 +116,7 @@ internal fun LeavePlannerScreen(route: Route) {
                                         )
                                         if (open && order != d.dayOfWeek.value) {
                                             BasicText(
-                                                DayOfWeek.of(order!!).getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
+                                                DayOfWeek.of(order).getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
                                                 style = RisoType.small.copy(color = if (on) inks.paper else inks.a, fontSize = 9.sp),
                                             )
                                         }

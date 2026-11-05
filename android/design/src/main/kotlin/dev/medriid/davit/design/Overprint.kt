@@ -46,8 +46,8 @@ fun Overprint(
     registerKey: Any? = Unit,
     style: TextStyle = RisoType.display(fontSize),
 ) {
-    // Soft: just the number, light and large, in the text colour.
-    if (LocalInks.current.soft || LocalInks.current.editorial) {
+    // Soft / Editorial / Material 3: plain display text in the text colour.
+    if (LocalInks.current.soft || LocalInks.current.editorial || LocalInks.current.material) {
         BasicText(text, modifier, style = style.copy(color = LocalInks.current.text))
         return
     }

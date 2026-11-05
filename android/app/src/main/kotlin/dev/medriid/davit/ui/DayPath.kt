@@ -223,7 +223,7 @@ private fun ClassStopItem(slot: ClassSlot, minute: Int, nodeY: androidx.compose.
     val second = when {
         live -> "now"
         done -> "done"
-        risk -> "attend ${slot.attendance!!.mustAttend}"
+        risk -> "attend ${slot.attendance.mustAttend}"
         else -> slot.course.venue.ifBlank { if (slot.isLab) "lab" else "theory" }
     }
     val said = listOf(slot.course.courseName, if (slot.isLab) "lab" else "theory", "${clock(m.start)} to ${clock(m.end)}", if (live) "on now" else second).joinToString(", ")

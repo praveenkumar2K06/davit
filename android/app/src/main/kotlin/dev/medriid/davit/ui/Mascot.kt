@@ -1,5 +1,11 @@
 package dev.medriid.davit.ui
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -306,14 +312,49 @@ fun MascotEditor(mascot: Mascot, onChange: (Mascot) -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+    val inks = dev.medriid.davit.design.LocalInks.current
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEachIndexed { i, text ->
-            Box(
-                Modifier
-                    .clickable(role = Role.RadioButton) { onSelect(i) }
-                    .semantics { this.selected = i == selected }
-                    .padding(vertical = 5.dp),
-            ) { InkChip(text, solid = i == selected) }
+            if (inks.material) {
+                val isSelected = i == selected
+                val labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onSelect(i) },
+                    label = {
+                        BasicText(
+                            text,
+                            maxLines = 1,
+                            softWrap = false,
+                            style = dev.medriid.davit.design.RisoType.label.copy(
+                                color = labelColor,
+                                fontSize = 12.sp,
+                            ),
+                        )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = inks.a,
+                        selectedLabelColor = labelColor,
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        labelColor = labelColor,
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isSelected,
+                        borderColor = inks.rule,
+                        selectedBorderColor = inks.a,
+                        borderWidth = 1.dp,
+                    ),
+                )
+            } else {
+                Box(
+                    Modifier
+                        .clickable(role = Role.RadioButton) { onSelect(i) }
+                        .semantics { this.selected = i == selected }
+                        .padding(vertical = 5.dp),
+                ) { InkChip(text, solid = i == selected) }
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import dev.medriid.davit.data.bannerText
 import dev.medriid.davit.data.BannerStat
+import dev.medriid.davit.data.withDynamicColor
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
@@ -123,13 +124,13 @@ fun AppScreen(repo: Repo, locked: Boolean = false, onUnlock: () -> Unit = {}) {
         2 -> true
         else -> isSystemInDarkTheme()
     }
-    // Bar icons follow the paper: dark icons on paper, light ones at night.
-    val activity = LocalContext.current as? ComponentActivity
+    val context = LocalContext.current
+    val activity = context as? ComponentActivity
     LaunchedEffect(dark) {
         val bars = if (dark) SystemBarStyle.dark(AndroidColor.TRANSPARENT) else SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
         activity?.enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
     }
-    val inks = state.palette.inks(dark)
+    val inks = state.palette.inks(dark).withDynamicColor(context)
     // Where you are (tab and open screens) lives outside the rebuild below, so changing style keeps you there.
     val tab = rememberSaveable { mutableIntStateOf(0) }
     val stack = rememberSaveable(saver = Route.StackSaver) { mutableStateListOf<Route>() }
@@ -141,7 +142,7 @@ fun AppScreen(repo: Repo, locked: Boolean = false, onUnlock: () -> Unit = {}) {
     }
     RisoTheme(inks) {
         // Switching style rebuilds everything, so every text picks up its type.
-        key(inks.soft, inks.editorial) {
+        key(inks.style) {
         Grain(Modifier.fillMaxSize()) {
             if (locked && state.signedIn) {
                 LockScreen(onUnlock)

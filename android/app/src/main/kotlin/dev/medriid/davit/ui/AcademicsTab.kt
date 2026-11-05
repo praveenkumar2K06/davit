@@ -51,6 +51,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.text.BasicText
 import dev.medriid.davit.design.printIn
 import dev.medriid.davit.data.GradePoints
 import dev.medriid.davit.data.Snapshot
@@ -66,6 +68,7 @@ import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.Overprint
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
+import dev.medriid.davit.ui.map.MapChip
 import dev.medriid.davit.vtop.Assignment
 import dev.medriid.davit.vtop.CourseMarks
 import dev.medriid.davit.vtop.Exam
@@ -73,6 +76,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import androidx.core.net.toUri
+import dev.medriid.davit.design.InkField
+import dev.medriid.davit.design.Kind
 
 /** Marks, assignments, exams, grades, materials and faculty for the selected semester, one segment at a time. */
 @Composable
@@ -216,7 +222,7 @@ private fun AssignmentsSegment(snapshot: Snapshot) {
                         Modifier
                             .fillMaxWidth()
                             .sharedCard(route.sharedKey)
-                            .clickable(role = androidx.compose.ui.semantics.Role.Button) { nav.go(route) }
+                            .clickable(role = Role.Button) { nav.go(route) }
                             .padding(top = 10.dp, bottom = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -388,7 +394,7 @@ private fun FacultySegment(snapshot: Snapshot) {
     val hits = remember(query, index) { if (query.isBlank()) null else index.search(query) }
     val shown = hits?.map { it.item } ?: courses
 
-    dev.medriid.davit.design.InkField(query, { query = it }, "Course, code or any teacher", Modifier.fillMaxWidth())
+    InkField(query, { query = it }, "Course, code or any teacher", search = true , modifier = Modifier.fillMaxWidth())
     Spacer(Modifier.height(14.dp))
     if (courses.isEmpty()) {
         InkText("No timetable for ${snapshot.semester.name} yet. Type three letters of any teacher's name to look them up on VTOP.", style = RisoType.small)
@@ -397,9 +403,9 @@ private fun FacultySegment(snapshot: Snapshot) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             shown.forEach { parts ->
                 val hit = hits?.firstOrNull { it.item === parts }
-                InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Classes, plateOffset = 4.dp) {
+                InkCard(Modifier.fillMaxWidth(), kind = Kind.Classes, plateOffset = 4.dp) {
                     val name = parts.first().courseName
-                    androidx.compose.foundation.text.BasicText(
+                    BasicText(
                         highlight(name, hit?.ranges?.get("course").orEmpty(), inks.a),
                         style = RisoType.title.copy(color = inks.text),
                         maxLines = 2,
@@ -418,7 +424,7 @@ private fun FacultySegment(snapshot: Snapshot) {
                             label = true,
                         )
                         Spacer(Modifier.height(4.dp))
-                        androidx.compose.foundation.text.BasicText(
+                        BasicText(
                             highlight(titleCase(who.ifBlank { "Not assigned yet" }), hit?.ranges?.get("faculty").orEmpty().takeIf { parts.size == 1 }.orEmpty(), inks.a),
                             style = RisoType.body.copy(fontWeight = FontWeight.SemiBold, color = inks.text),
                         )
@@ -429,12 +435,12 @@ private fun FacultySegment(snapshot: Snapshot) {
                         if (who.isNotBlank()) FacultyRatingLink(f?.empId, who, Modifier.padding(top = 8.dp))
                         if (f?.cabin?.isNotBlank() == true || f?.email?.isNotBlank() == true) {
                             Spacer(Modifier.height(8.dp))
-                            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                if (f.cabin.isNotBlank()) dev.medriid.davit.ui.map.MapChip(f.cabin, label = "Cabin ${f.cabin}")
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                if (f.cabin.isNotBlank()) MapChip(f.cabin, label = "Cabin ${f.cabin}")
                                 if (f.email.isNotBlank()) {
                                     Box(Modifier.clickable(role = Role.Button) {
                                         runCatching {
-                                            context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + f.email)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                            context.startActivity(Intent(Intent.ACTION_SENDTO, ("mailto:" + f.email).toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                                         }
                                     }) { InkChip(f.email, solid = true) }
                                 }
@@ -656,28 +662,41 @@ private fun SegmentBar(items: List<Pair<String, RisoIcon>>, selected: Int, onSel
                         this.selected = on
                     },
             ) {
-                // Soft: a dark pill for the open one, a faint outline for the rest, no plate behind.
-                val soft = inks.soft
+                val soft = inks.soft || inks.material
                 if (on && !soft) Box(Modifier.matchParentSize().offset(3.dp, 3.dp).clip(pill).background(inks.a))
+                val bg = when {
+                    inks.material -> if (on) inks.a else inks.surface
+                    soft -> if (on) inks.text else inks.surface
+                    else -> if (on) inks.b else inks.paper
+                }
+                val borderCol = when {
+                    inks.material -> if (on) inks.a else inks.rule
+                    soft -> if (on) inks.text else inks.text.copy(alpha = 0.2f)
+                    else -> if (on) inks.b else inks.text
+                }
+                val contentCol = when {
+                    inks.material -> if (on) inks.onA else inks.text
+                    else -> if (on) inks.paper else inks.text
+                }
                 Row(
                     Modifier
                         .matchParentSize()
                         .clip(pill)
-                        .background(if (on) (if (soft) inks.text else inks.b) else if (soft) inks.surface else inks.paper)
-                        .border(if (soft) 1.dp else 1.5.dp, if (soft) (if (on) inks.text else inks.text.copy(alpha = 0.2f)) else if (on) inks.b else inks.text, pill)
+                        .background(bg)
+                        .border(if (soft) 1.dp else 1.5.dp, borderCol, pill)
                         .padding(horizontal = 10.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconGlyph(icon, if (on) inks.paper else inks.text, Modifier.size(21.dp))
+                    IconGlyph(icon, contentCol, Modifier.size(21.dp))
                     if (on) {
                         Spacer(Modifier.width(6.dp))
-                        androidx.compose.foundation.text.BasicText(
+                        BasicText(
                             label,
                             maxLines = 1,
                             softWrap = false,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
-                            style = RisoType.body.copy(fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold, color = inks.paper, letterSpacing = (-0.2).sp),
+                            style = RisoType.body.copy(fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold, color = contentCol, letterSpacing = (-0.2).sp),
                         )
                     }
                 }

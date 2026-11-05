@@ -45,10 +45,14 @@ object RisoType {
     /** Editorial look: a heavy grotesk set tight for headlines and numbers, plain sans for reading. */
     var editorial = false
 
+    /** Material 3 look: system sans-serif with clean medium weights. */
+    var material = false
+
     private val sans = FontFamily.SansSerif
-    private val plain get() = soft || editorial
+    private val plain get() = soft || editorial || material
 
     fun display(size: TextUnit) = when {
+        material -> TextStyle(fontFamily = sans, fontWeight = FontWeight.Bold, fontSize = size, lineHeight = 1.05.em, letterSpacing = (-0.02).em, fontFeatureSettings = Tabular)
         editorial -> TextStyle(fontFamily = sans, fontWeight = FontWeight.Black, fontSize = size, lineHeight = 0.96.em, letterSpacing = (-0.04).em, fontFeatureSettings = Tabular)
         soft -> TextStyle(fontFamily = sans, fontWeight = FontWeight.Light, fontSize = size, lineHeight = 1.05.em, letterSpacing = (-0.02).em, fontFeatureSettings = Tabular)
         else -> TextStyle(
@@ -76,7 +80,7 @@ object RisoType {
             fontSize = 19.sp,
             fontWeight = when {
                 editorial -> FontWeight.Bold
-                soft -> FontWeight.Medium
+                soft || material -> FontWeight.Medium
                 else -> FontWeight.SemiBold
             },
             lineHeight = 1.25.em,
@@ -89,19 +93,20 @@ object RisoType {
             fontFamily = if (plain) sans else RisoFonts.Body,
             fontWeight = when {
                 editorial -> FontWeight.Bold
-                soft -> FontWeight.Medium
+                soft || material -> FontWeight.Medium
                 else -> FontWeight.SemiBold
             },
             fontSize = if (editorial) 11.sp else 12.sp,
             letterSpacing = when {
                 editorial -> 0.14.em
                 soft -> 0.08.em
+                material -> 0.05.em
                 else -> 0.1.em
             },
             fontFeatureSettings = Tabular,
         )
 
-    val button: TextStyle get() = label.copy(fontSize = if (editorial) 14.sp else 15.sp, letterSpacing = if (soft) 0.02.em else 0.06.em)
+    val button: TextStyle get() = label.copy(fontSize = if (editorial) 14.sp else 15.sp, letterSpacing = if (soft || material) 0.02.em else 0.06.em)
 }
 
 /**

@@ -32,8 +32,8 @@ fun Grain(
 ) {
     val inks = LocalInks.current
     val grain = remember { grainBrush() }
-    if (inks.soft || inks.editorial) {
-        // Soft: plain warm grey, no grain.
+    if (inks.soft || inks.editorial || inks.material) {
+        // Soft / Editorial / Material 3: plain surface background, no noise grain.
         Box(modifier.background(inks.paper), content = content)
         return
     }
