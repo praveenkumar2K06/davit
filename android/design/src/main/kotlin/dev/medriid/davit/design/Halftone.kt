@@ -5,14 +5,16 @@ import androidx.compose.animation.core.snap
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -76,6 +78,21 @@ fun HalftoneBar(
         label = "bar",
     )
     val dots = rememberHalftoneBrush(inks.b, cell = 6.dp, dotRatio = 0.3f)
+
+    if (inks.material) {
+        // Material 3: official LinearProgressIndicator component.
+        LinearProgressIndicator(
+            progress = { shown },
+            modifier = modifier
+                .fillMaxWidth()
+                .height(height.coerceAtMost(8.dp))
+                .clip(RoundedCornerShape(4.dp)),
+            color = inks.a,
+            trackColor = inks.rule.copy(alpha = 0.2f),
+            drawStopIndicator = {},
+        )
+        return
+    }
     if (inks.editorial) {
         // Editorial: a flat square bar on a hairline track, red when under the line, a tick at it.
         Box(
@@ -94,15 +111,15 @@ fun HalftoneBar(
         return
     }
     if (inks.soft) {
-        // Soft: a rounded track with a solid fill, coral when under the line, and a tick at it.
+        // Soft: a rounded track with a solid fill, primary/coral when under the line, and a tick at it.
         Box(
             modifier
                 .fillMaxWidth()
                 .height(height.coerceAtMost(10.dp))
                 .drawBehind {
                     val r = androidx.compose.ui.geometry.CornerRadius(size.height / 2)
-                    drawRoundRect(inks.text.copy(alpha = 0.1f), cornerRadius = r)
-                    drawRoundRect(if (atRisk) inks.a else inks.text, size = Size(size.width * shown, size.height), cornerRadius = r)
+                    drawRoundRect(inks.rule.copy(alpha = 0.2f), cornerRadius = r)
+                    drawRoundRect(if (atRisk) inks.a else inks.a, size = Size(size.width * shown, size.height), cornerRadius = r)
                     if (threshold != null) {
                         val x = size.width * threshold
                         drawRect(inks.text.copy(alpha = 0.6f), topLeft = Offset(x - 1.dp.toPx(), -3.dp.toPx()), size = Size(2.dp.toPx(), size.height + 6.dp.toPx()))

@@ -8,9 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
@@ -30,6 +30,7 @@ fun TiltedCard(
     Box(
         modifier
             .graphicsLayer { rotationZ = -1.6f }
+            .then(if (inks.material) Modifier.clip(MaterialShape) else Modifier)
             .background(inks.a)
             .drawWithContent {
                 val r = 60.dp.toPx()

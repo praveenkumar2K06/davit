@@ -25,6 +25,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,6 +59,7 @@ import dev.medriid.davit.data.planFor
 import dev.medriid.davit.data.remainingFor
 import dev.medriid.davit.data.skipTillEnd
 import dev.medriid.davit.data.weekOf
+import dev.medriid.davit.design.AppStyle
 import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkCard
@@ -68,7 +73,9 @@ import dev.medriid.davit.design.TiltedCard
 import dev.medriid.davit.design.printIn
 import kotlinx.coroutines.delay
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -217,7 +224,7 @@ internal fun TodayTab(
                 Column {
                     InkText("At risk", label = true)
                     Spacer(Modifier.height(10.dp))
-                    Heading("${worst.courseName} ${worst.percent}%", 26.sp)
+                    Heading("${worst.courseName} ${worst.percent}%", 26.sp, onCard = true)
                     Spacer(Modifier.height(10.dp))
                     InkText("Attend the next ${worst.mustAttend} to get back to 75%.")
                 }
@@ -514,8 +521,11 @@ private fun ReminderCard(r: Reminder, today: LocalDate, onDone: () -> Unit) {
 @Composable
 private fun AddReminder(onSave: (String, LocalDate) -> Unit) {
     val context = LocalContext.current
+    val style = LocalInks.current.style
     var title by rememberSaveable { mutableStateOf("") }
     var date by remember { mutableStateOf(LocalDate.now().plusDays(1)) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
     Column(Modifier.padding(bottom = 14.dp)) {
         ChoiceRow(ReminderPresets, ReminderPresets.indexOf(title)) { title = ReminderPresets[it] }
         Spacer(Modifier.height(8.dp))
@@ -524,10 +534,61 @@ private fun AddReminder(onSave: (String, LocalDate) -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             InkText(date.format(dueFormat), style = RisoType.title, modifier = Modifier.weight(1f))
             InkButton("Change date", {
-                DatePickerDialog(context, { _, y, m, d -> date = LocalDate.of(y, m + 1, d) }, date.year, date.monthValue - 1, date.dayOfMonth).show()
+                if (style == AppStyle.Material3) {
+                    showDatePicker = true
+                } else {
+                    DatePickerDialog(context, { _, y, m, d -> date = LocalDate.of(y, m + 1, d) }, date.year, date.monthValue - 1, date.dayOfMonth).show()
+                }
             }, quiet = true)
         }
         Spacer(Modifier.height(10.dp))
         InkButton("Save", { onSave(title, date) }, enabled = title.isNotBlank(), fillWidth = true, modifier = Modifier.fillMaxWidth())
+    }
+
+    if (showDatePicker) {
+        DatePickerModal(
+            initialDate = date,
+            onDateSelected = { millis ->
+                if (millis != null) {
+                    date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                }
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerModal(
+    initialDate: LocalDate? = null,
+    onDateSelected: (Long?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val initialMillis = remember(initialDate) {
+        initialDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
+    }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialMillis
+    )
+
+    androidx.compose.material3.DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(datePickerState.selectedDateMillis)
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        androidx.compose.material3.DatePicker(state = datePickerState)
     }
 }

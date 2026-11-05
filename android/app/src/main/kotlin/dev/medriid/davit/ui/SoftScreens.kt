@@ -164,12 +164,12 @@ internal fun SoftHome(snapshot: Snapshot, reminders: List<Reminder>, onOpen: (Ro
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Box(Modifier.size(24.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.7f)), contentAlignment = Alignment.Center) {
-                                BasicText(initials(row.courseName), style = RisoType.small.copy(fontSize = 10.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A)))
+                                BasicText(initials(row.courseName), style = RisoType.small.copy(fontSize = 10.sp, fontWeight = FontWeight.Medium, color = inks.text))
                             }
                             Spacer(Modifier.width(6.dp))
                             BasicText(
                                 "${row.percent}%" + if (isLabType(row.classType)) " lab" else "",
-                                style = RisoType.small.copy(fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A)),
+                                style = RisoType.small.copy(fontWeight = FontWeight.Medium, color = inks.text),
                             )
                         }
                     }
@@ -310,20 +310,20 @@ internal fun SoftIntro(onStart: () -> Unit) {
         // The star, half off the page.
         Sparkle(Color(0xFFF8D58C), Modifier.size(360.dp).offset((-80).dp, 330.dp))
         Column(Modifier.align(Alignment.BottomStart).windowInsetsPadding(WindowInsets.safeDrawing).padding(horizontal = 22.dp, vertical = 26.dp)) {
-            BasicText("daVIT.", style = RisoType.display(64.sp).copy(color = Color(0xFF1A1A1A), fontWeight = FontWeight.Normal))
+            BasicText("daVIT.", style = RisoType.display(64.sp).copy(color = inks.text, fontWeight = FontWeight.Normal))
             Spacer(Modifier.height(4.dp))
-            BasicText("VTOP, calmly.", style = RisoType.body.copy(color = Color(0xFF1A1A1A)))
+            BasicText("VTOP, calmly.", style = RisoType.body.copy(color = inks.text))
             Spacer(Modifier.height(22.dp))
             Box(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(50))
-                    .border(1.dp, Color(0xFF1A1A1A), RoundedCornerShape(50))
+                    .border(1.dp, inks.text, RoundedCornerShape(50))
                     .clickable(role = Role.Button, onClick = onStart)
                     .padding(horizontal = 24.dp, vertical = 18.dp),
             ) {
-                BasicText("Get started", Modifier.align(Alignment.Center), style = RisoType.button.copy(color = Color(0xFF1A1A1A), fontSize = 16.sp))
-                BasicText("›", Modifier.align(Alignment.CenterEnd), style = RisoType.button.copy(color = Color(0xFF1A1A1A), fontSize = 20.sp))
+                BasicText("Get started", Modifier.align(Alignment.Center), style = RisoType.button.copy(color = inks.text, fontSize = 16.sp))
+                BasicText("›", Modifier.align(Alignment.CenterEnd), style = RisoType.button.copy(color = inks.text, fontSize = 20.sp))
             }
         }
     }
@@ -443,8 +443,8 @@ private fun CoralPill(title: String, sub: String, onClick: () -> Unit) {
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        BasicText(title, style = RisoType.button.copy(color = Color(0xFF1A1A1A), fontSize = 17.sp))
-        BasicText(sub, style = RisoType.small.copy(color = Color(0xFF1A1A1A).copy(alpha = 0.7f), fontSize = 12.sp))
+        BasicText(title, style = RisoType.button.copy(color = inks.onA, fontSize = 17.sp))
+        BasicText(sub, style = RisoType.small.copy(color = inks.onA.copy(alpha = 0.8f), fontSize = 12.sp))
     }
 }
 

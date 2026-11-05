@@ -2,6 +2,9 @@
 
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.design.AppStyle
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import dev.medriid.davit.design.InkField
 import androidx.compose.foundation.layout.FlowRow
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,7 +36,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -92,7 +97,7 @@ internal enum class SettingsGroup(val id: String, val title: String, val icon: R
 
 /** Every setting by name, for Find a setting: what it's called, other words for it, and its group. */
 private val SettingsIndex: List<Triple<String, String, SettingsGroup>> = listOf(
-    Triple("Style: Classic or Editorial", "ui theme look layout", SettingsGroup.Look),
+    Triple("Theme style & look", "ui theme look layout style", SettingsGroup.Look),
     Triple("Light or dark", "dark mode night theme", SettingsGroup.Look),
     Triple("Colours", "ink pair palette colour color", SettingsGroup.Look),
     Triple("Your own colours", "custom palette color", SettingsGroup.Look),
@@ -174,13 +179,14 @@ internal fun SettingsScreen(route: Route) {
         Spacer(Modifier.height(8.dp))
         val blocked = state.alerts && !Notifier.permitted(context)
         val saved by repo.files.saved.collectAsState()
-        val editorial = LocalInks.current.editorial
+        val currentStyleName = LocalInks.current.style.title
+        val isClassicStyle = LocalInks.current.style == dev.medriid.davit.design.AppStyle.Classic
         SettingsGroup.entries.forEach { g ->
             val summary = when (g) {
                 SettingsGroup.Look -> listOfNotNull(
-                    if (editorial) "Editorial" else "Classic",
+                    currentStyleName,
                     listOf("Follows the phone", "Light", "Dark")[state.theme.coerceIn(0, 2)],
-                    if (editorial) null else InkPairs.all[state.palette.base.coerceIn(0, InkPairs.all.lastIndex)].name.takeUnless { state.palette.custom } ?: "your own colours",
+                    if (isClassicStyle) InkPairs.all[state.palette.base.coerceIn(0, InkPairs.all.lastIndex)].name.takeUnless { state.palette.custom } ?: "your own colours" else null,
                 ).joinToString(" · ")
                 SettingsGroup.Yours -> "Display card, mascot, course names" + if (state.aliases.isNotEmpty()) " · ${state.aliases.size} renamed" else ""
                 SettingsGroup.Alerts -> when {
@@ -328,15 +334,16 @@ private fun LookSettings() {
     val repo = LocalRepo.current
     val nav = LocalNav.current
     val state by repo.state.collectAsState()
-    val editorial = LocalInks.current.editorial
+    val activeStyle = LocalInks.current.style
+    val isClassic = activeStyle == AppStyle.Classic
     SettingsCard("Style") {
-        StylePicker(editorial, repo::setEditorial)
+        StylePicker(style = activeStyle) { repo.setStyle(it) }
     }
     SettingsCard("Light or dark") {
         ChoiceRow(listOf("System", "Light", "Dark"), state.theme) { repo.setTheme(it) }
     }
-    // Colours belong to Classic; Editorial keeps its own newsprint and red.
-    if (!editorial) SettingsCard("Colours") {
+    // Colours belong to Classic; Editorial and Material 3 keep their own palettes.
+    if (isClassic) SettingsCard("Colours") {
         val palette = state.palette
         var replacing by remember { mutableStateOf<Int?>(null) }
         InkText(
@@ -434,19 +441,20 @@ private fun SyncSettings() {
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = !chosen && state.busy == null, role = Role.RadioButton) { repo.chooseSemester(sem.id) }
+                            .selectable(enabled = !chosen && state.busy == null, role = Role.RadioButton, selected = chosen) { repo.chooseSemester(sem.id) }
                             .semantics { selected = chosen }
                             .padding(vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Radio(chosen)
+                        RadioButton(chosen, onClick = null)
                         Spacer(Modifier.width(12.dp))
                         InkText(sem.name)
                     }
                 }
             }
             if (groups.isNotEmpty()) {
-                if (semesters.size > 1) Hairline()
+                Spacer(Modifier.height(8.dp))
+                Hairline()
                 val manual = repo.manualCalendarGroup()
                 val cal = snapshot?.calendar
                 Spacer(Modifier.height(8.dp))
@@ -713,6 +721,7 @@ internal fun SettingsCard(title: String, icon: RisoIcon? = null, content: @Compo
 
 @Composable
 internal fun ToggleRow(title: String, body: String, on: Boolean, onToggle: () -> Unit) {
+    val inks = LocalInks.current
     Row(
         Modifier
             .fillMaxWidth()
@@ -726,7 +735,21 @@ internal fun ToggleRow(title: String, body: String, on: Boolean, onToggle: () ->
             InkText(body, style = RisoType.small)
         }
         Spacer(Modifier.width(12.dp))
-        InkChip(if (on) "On" else "Off", solid = on)
+        if (inks.material) {
+            Switch(
+                checked = on,
+                onCheckedChange = { onToggle() },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = inks.onA,
+                    checkedTrackColor = inks.a,
+                    uncheckedThumbColor = inks.muted,
+                    uncheckedTrackColor = inks.surface,
+                    uncheckedBorderColor = inks.rule,
+                ),
+            )
+        } else {
+            InkChip(if (on) "On" else "Off", solid = on)
+        }
     }
 }
 

@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -41,6 +46,7 @@ fun InkField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    search: Boolean = false,
     secret: Boolean = false,
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -49,47 +55,107 @@ fun InkField(
     val inks = LocalInks.current
     var focused by remember { mutableStateOf(false) }
     var reveal by remember { mutableStateOf(false) }
-    Column(modifier) {
-        InkText(label, label = true)
-        Spacer(Modifier.height(6.dp))
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 56.dp)
-                .clip(CardShape)
-                .background(inks.paper)
-                .border(if (focused) 3.dp else 2.dp, if (focused) inks.a else inks.text, CardShape)
-                .padding(start = 14.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            BasicTextField(
+
+    when (inks.style) {
+        AppStyle.Material3 -> {
+            TextField(
                 value = value,
                 onValueChange = onValueChange,
+                modifier = modifier.fillMaxWidth(),
                 enabled = enabled,
                 singleLine = true,
-                textStyle = RisoType.body.copy(fontSize = 18.sp, color = inks.text),
-                cursorBrush = SolidColor(inks.a),
+                label = { Text(label) },
+                textStyle = RisoType.body.copy(fontSize = 17.sp, color = inks.text),
                 visualTransformation = if (secret && !reveal) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 14.dp)
-                    .onFocusChanged { focused = it.isFocused },
+                leadingIcon = if(search) {
+                    {
+                        SearchGlyph()
+                    }
+                } else null,
+                trailingIcon = if (secret) {
+                    {
+                        Box(
+                            Modifier
+                                .clickable(role = Role.Button) { reveal = !reveal }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            BasicText(
+                                if (reveal) "HIDE" else "SHOW",
+                                style = RisoType.label.copy(color = inks.a),
+                            )
+                        }
+                    }
+                } else null,
+                shape = MaterialShape,
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent
+                )
             )
-            if (secret) {
-                Box(
+        }
+        AppStyle.Editorial, AppStyle.Soft, AppStyle.Glass, AppStyle.Classic -> {
+            Column(modifier) {
+                InkText(label, label = true)
+                Spacer(Modifier.height(6.dp))
+                Row(
                     Modifier
-                        .defaultMinSize(minWidth = 64.dp, minHeight = 48.dp)
-                        .clickable(role = Role.Button) { reveal = !reveal },
-                    contentAlignment = Alignment.Center,
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 56.dp)
+                        .clip(if (inks.style == AppStyle.Soft) SoftShape else CardShape)
+                        .background(inks.paper)
+                        .border(
+                            if (focused) 3.dp else 2.dp,
+                            if (focused) inks.a else inks.text,
+                            if (inks.style == AppStyle.Soft) SoftShape else CardShape
+                        )
+                        .padding(start = 14.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    BasicText(
-                        if (reveal) "HIDE" else "SHOW",
-                        style = RisoType.label.copy(color = inks.text),
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        enabled = enabled,
+                        singleLine = true,
+                        textStyle = RisoType.body.copy(fontSize = 18.sp, color = inks.text),
+                        cursorBrush = SolidColor(inks.a),
+                        visualTransformation = if (secret && !reveal) PasswordVisualTransformation() else VisualTransformation.None,
+                        keyboardOptions = keyboardOptions,
+                        keyboardActions = keyboardActions,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 14.dp)
+                            .onFocusChanged { focused = it.isFocused },
                     )
+                    if (secret) {
+                        Box(
+                            Modifier
+                                .defaultMinSize(minWidth = 64.dp, minHeight = 48.dp)
+                                .clickable(role = Role.Button) { reveal = !reveal },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            BasicText(
+                                if (reveal) "HIDE" else "SHOW",
+                                style = RisoType.label.copy(color = inks.text),
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SearchGlyph() {
+    val inks = LocalInks.current
+    androidx.compose.foundation.Canvas(Modifier.width(20.dp).height(20.dp)) {
+        val w = 2.2.dp.toPx()
+        drawCircle(inks.text, size.minDimension * 0.32f, androidx.compose.ui.geometry.Offset(size.width * 0.42f, size.height * 0.42f), style = androidx.compose.ui.graphics.drawscope.Stroke(w))
+        drawLine(inks.text, androidx.compose.ui.geometry.Offset(size.width * 0.66f, size.height * 0.66f), androidx.compose.ui.geometry.Offset(size.width * 0.92f, size.height * 0.92f), w, androidx.compose.ui.graphics.StrokeCap.Round)
     }
 }

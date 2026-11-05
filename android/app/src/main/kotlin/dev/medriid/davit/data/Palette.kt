@@ -1,5 +1,9 @@
 package dev.medriid.davit.data
 
+import android.content.Context
+import android.os.Build
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import dev.medriid.davit.design.InkPairs
@@ -72,6 +76,7 @@ data class Palette(
             glass = pair.glass,
             soft = pair.soft,
             editorial = pair.editorial,
+            material = pair.material,
         )
     }
 
@@ -84,6 +89,25 @@ data class Palette(
 
         fun fromJson(s: String?): Palette? = s?.let { runCatching { PaletteJson.decodeFromString(serializer(), it) }.getOrNull() }
     }
+}
+
+/**
+ * Returns [this] Inks with system Material You dynamic wallpaper colors applied on Android 12+ (API 31+).
+ */
+fun Inks.withDynamicColor(context: Context): Inks {
+    if (!material || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return this
+    return runCatching {
+        val scheme = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        val updatedDayTwin = dayTwin?.withDynamicColor(context)
+        copy(
+            paper = scheme.surface,
+            a = scheme.primary,
+            b = scheme.onSurface,
+            text = scheme.onSurface,
+            customOnA = scheme.onPrimary,
+            dayTwin = updatedDayTwin,
+        )
+    }.getOrDefault(this)
 }
 
 private val PaletteJson = Json { ignoreUnknownKeys = true }

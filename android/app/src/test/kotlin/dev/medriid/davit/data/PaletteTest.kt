@@ -39,7 +39,7 @@ class PaletteTest {
         for (i in InkPairs.all.indices) {
             val day = InkPairs.of(i, false)
             val night = InkPairs.of(i, true)
-            if (day.glass || day.soft || day.editorial) continue // Glass has no colour to tone; Soft and Editorial have no card shadows.
+            if (day.glass || day.soft || day.editorial || day.material) continue // Glass has no colour to tone; Soft, Editorial and Material 3 have no card shadows.
             // Calmer than the day's spot ink, so nothing glows on the charcoal stock.
             assertTrue(night.a.toHsv()[1] < day.a.toHsv()[1])
             assertTrue(night.b.contrast(night.paper) >= 3f)
@@ -125,6 +125,17 @@ class PaletteTest {
         assertEquals(p, Palette.fromJson(p.toJson()))
         assertNull(Palette.fromJson("not json"))
         assertEquals(Palette(), Palette.fromJson("{}"))
+    }
+
+    @Test
+    fun classicStyleIndicesAreValid() {
+        for (i in InkPairs.classic) {
+            assertEquals(dev.medriid.davit.design.AppStyle.Classic, InkPairs.of(i, false).style)
+        }
+        assertFalse(InkPairs.softIndex in InkPairs.classic)
+        assertFalse(InkPairs.editorialIndex in InkPairs.classic)
+        assertFalse(InkPairs.materialIndex in InkPairs.classic)
+        assertFalse(InkPairs.glassIndex in InkPairs.classic)
     }
 
     @Test

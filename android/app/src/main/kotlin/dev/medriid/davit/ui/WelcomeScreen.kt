@@ -2,6 +2,8 @@
 
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.design.AppStyle
+
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,16 +74,16 @@ internal fun WelcomeScreen(state: UiState, repo: Repo, onContinue: () -> Unit) {
         InkText("Your attendance, classes, marks and the campus map, from VTOP. First, pick how it looks.")
         Spacer(Modifier.height(18.dp))
         GroupLabel("Style", Modifier.padding(bottom = 8.dp))
-        val editorial = LocalInks.current.editorial
-        StylePicker(editorial, repo::setEditorial)
+        val activeStyle = LocalInks.current.style
+        StylePicker(activeStyle) { repo.setStyle(it) }
         Spacer(Modifier.height(14.dp))
         SampleCard(Mascot.parse(state.mascot))
 
         GroupLabel("Light or dark", Modifier.padding(top = 22.dp, bottom = 8.dp))
         ChoiceRow(listOf("System", "Light", "Dark"), state.theme) { repo.setTheme(it) }
 
-        // Colours belong to Classic; Editorial keeps its own newsprint and red.
-        if (!editorial) {
+        // Colours belong to Classic; Editorial and Material 3 keep their own presets.
+        if (activeStyle == AppStyle.Classic) {
             GroupLabel("Colours", Modifier.padding(top = 20.dp, bottom = 8.dp))
             val palette = state.palette
             FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
