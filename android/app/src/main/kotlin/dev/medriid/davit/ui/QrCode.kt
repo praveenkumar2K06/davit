@@ -108,7 +108,7 @@ internal fun QrScanner(onCode: (String) -> Unit, onClose: () -> Unit) {
                     val future = ProcessCameraProvider.getInstance(context)
                     future.addListener({ cont.resume(future.get()) }, ContextCompat.getMainExecutor(context))
                 }
-                val p = Preview.Builder().build().also { it.setSurfaceProvider(preview.surfaceProvider) }
+                val p = Preview.Builder().build().also { it.surfaceProvider = preview.surfaceProvider }
                 val reader = QRCodeReader()
                 var found = false
                 val analysis = ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build().also { a ->

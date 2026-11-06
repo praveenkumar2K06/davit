@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(ExperimentalLayoutApi::class)
 
 package dev.medriid.davit.ui
 
@@ -311,7 +311,6 @@ private fun Preview(inks: Inks) {
  * below, the hex to type, Riso's own inks to start from, and how well it reads. Every move
  * shows across the app at once; Done keeps it, Cancel (or back) puts the old one back.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PickerSheet(role: InkRole, palette: Palette, day: Inks, dark: Inks, onClose: () -> Unit) {
     val repo = LocalRepo.current

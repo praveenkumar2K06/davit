@@ -5,6 +5,7 @@ import java.io.File
 import java.lang.reflect.Modifier
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.math.round
 
 /**
  * Writes what the parsers read from each fixture to `desktop/src-tauri/tests/parity.json`.
@@ -58,15 +59,25 @@ class ParityDump {
         Triple("paper_seeing", "paper_seeing_courses.html", PaperSeeing::page),
         Triple("paper_seeing", "paper_seeing_none.html", PaperSeeing::page),
         Triple("leave_form", "leave_form.html", Feeds::leaveForm),
-        Triple("form_read", "night_slip_form.html", { h -> Forms.read(h) }),
-        Triple("form_read", "night_slip_pending.html", { h -> Forms.read(h) }),
+        Triple("form_read", "night_slip_form.html") { h -> Forms.read(h) },
+        Triple("form_read", "night_slip_pending.html") { h -> Forms.read(h) },
         Triple("reply", "upload_done.html", Forms::reply),
         Triple("reply", "night_slip_pending.html", Forms::reply),
-        Triple("upload_outcome", "upload_done.html", { h -> CoursePages.uploadOutcome(h, "NONE") }),
-        Triple("upload_outcome", "upload_otp.html", { h -> CoursePages.uploadOutcome(h, "NONE") }),
-        Triple("upload_outcome", "upload_otp_wrong.html", { h -> CoursePages.uploadOutcome(h, "NONE") }),
-        Triple("upload_outcome", "upload_closed.html", { h -> CoursePages.uploadOutcome(h, "NONE") }),
-        Triple("upload_form", "upload_form.html", { h -> CoursePages.uploadForm(h, "C1", "D1") }),
+        Triple("upload_outcome", "upload_done.html") { h -> CoursePages.uploadOutcome(h, "NONE") },
+        Triple("upload_outcome", "upload_otp.html") { h -> CoursePages.uploadOutcome(h, "NONE") },
+        Triple("upload_outcome", "upload_otp_wrong.html") { h ->
+            CoursePages.uploadOutcome(
+                h,
+                "NONE"
+            )
+        },
+        Triple("upload_outcome", "upload_closed.html") { h ->
+            CoursePages.uploadOutcome(
+                h,
+                "NONE"
+            )
+        },
+        Triple("upload_form", "upload_form.html") { h -> CoursePages.uploadForm(h, "C1", "D1") },
     )
 
     @Test
@@ -106,7 +117,7 @@ class ParityDump {
             append('"')
         }
         is Boolean, is Int, is Long -> v.toString()
-        is Double -> if (v == Math.rint(v)) "%.1f".format(java.util.Locale.ENGLISH, v) else v.toString()
+        is Double -> if (v == round(v)) "%.1f".format(java.util.Locale.ENGLISH, v) else v.toString()
         is LocalDate, is LocalDateTime -> json(v.toString())
         is Enum<*> -> json(v.name)
         is Pair<*, *> -> "[${json(v.first)},${json(v.second)}]"

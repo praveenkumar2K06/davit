@@ -1,5 +1,6 @@
 [versions]
 agp = "9.5.0"
+json = "20260814"
 kotlin = "2.4.21"
 composeBom = "2026.09.00"
 coreKtx = "1.19.1"
@@ -24,6 +25,7 @@ compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-animation = { group = "androidx.compose.animation", name = "animation" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+json = { module = "org.json:json", version.ref = "json" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify" }

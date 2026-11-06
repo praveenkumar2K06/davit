@@ -55,11 +55,11 @@ class LoginFlowTest {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val path = request.requestUrl!!.encodedPath
                 val cookie = request.getHeader("Cookie").orEmpty()
-                return when {
-                    path == "/vtop/open/page" -> page(
+                return when (path) {
+                    "/vtop/open/page" -> page(
                         """<form id="stdForm"><input name="_csrf" value="open-csrf"></form>""",
                     ).addHeader("Set-Cookie", "JSESSIONID=pre; Path=/")
-                    path == "/vtop/prelogin/setup" -> {
+                    "/vtop/prelogin/setup" -> {
                         setups++
                         if (googleOnly > 0) {
                             googleOnly--
@@ -68,7 +68,7 @@ class LoginFlowTest {
                             page(loginPage(""))
                         }
                     }
-                    path == "/vtop/login" -> {
+                    "/vtop/login" -> {
                         loginPosts++
                         when (script.removeFirst()) {
                             "captcha" -> page(loginPage("Invalid Captcha"))
@@ -81,10 +81,10 @@ class LoginFlowTest {
                             }
                         }
                     }
-                    path == "/vtop/content" -> page(
+                    "/vtop/content" -> page(
                         """<input type="hidden" id="authorizedIDX" value="REGNO"><input name="_csrf" value="content-csrf">""",
                     )
-                    path in fixtures -> {
+                    in fixtures -> {
                         if (validSession != null && "JSESSIONID=$validSession" in cookie) page(fixtures.getValue(path))
                         else page(loginPage(""))
                     }

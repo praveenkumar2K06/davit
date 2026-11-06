@@ -116,7 +116,7 @@ object Feeds {
 
     /** The nearest short text before [el] in document order that isn't inside a table. */
     private fun headingBefore(el: org.jsoup.nodes.Element, doc: Document): String {
-        val all = doc.getAllElements()
+        val all = doc.allElements
         val at = all.indexOf(el)
         for (i in at - 1 downTo 0) {
             val e = all[i]

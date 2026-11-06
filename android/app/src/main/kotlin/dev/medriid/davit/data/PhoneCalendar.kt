@@ -13,6 +13,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.core.content.edit
 
 /**
  * Your classes in the phone's calendar: a calendar of daVIT's own ("daVIT classes", on
@@ -31,7 +32,7 @@ object PhoneCalendar {
     fun enabled(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(K_ON, false)
 
     private fun setEnabled(context: Context, on: Boolean) =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(K_ON, on).apply()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean(K_ON, on) }
 
     private fun asSyncAdapter(uri: Uri): Uri = uri.buildUpon()
         .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")

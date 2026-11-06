@@ -2,7 +2,6 @@ package dev.medriid.davit.widget
 
 import android.content.Context
 import android.content.res.Configuration
-import androidx.glance.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
@@ -10,10 +9,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
+import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
@@ -41,14 +41,13 @@ import dev.medriid.davit.data.planFor
 import dev.medriid.davit.data.remainingFor
 import dev.medriid.davit.data.vtopDate
 import dev.medriid.davit.data.weekOf
-import dev.medriid.davit.design.InkPairs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDateTime
-import java.time.format.TextStyle as JavaTextStyle
 import java.util.Locale
+import java.time.format.TextStyle as JavaTextStyle
 
 /**
  * Home-screen widget: the class on now (or next), its attendance, and the nearest thing
@@ -136,14 +135,13 @@ private fun Content(s: UiState, now: LocalDateTime) {
 private fun footer(s: UiState, now: LocalDateTime): String {
     val snap = s.snapshot ?: return ""
     val today = now.toLocalDate()
-    val due = snap.assignments.flatMap { it.items }
+    val due = snap.assignments.asSequence().flatMap { it.items }
         .filter { it.updated == null }
         .mapNotNull { a -> vtopDate(a.due)?.let { a to it } }
         .filter { (_, d) -> !d.isBefore(today) && d.toEpochDay() - today.toEpochDay() <= 14 }
         .minByOrNull { it.second }
     if (due != null) {
-        val days = due.second.toEpochDay() - today.toEpochDay()
-        val whenText = when (days) {
+        val whenText = when (val days = due.second.toEpochDay() - today.toEpochDay()) {
             0L -> "today"
             1L -> "tomorrow"
             else -> "in $days days"

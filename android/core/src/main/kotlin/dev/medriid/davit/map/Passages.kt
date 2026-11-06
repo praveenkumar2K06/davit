@@ -54,10 +54,9 @@ object Passages {
         // Ways as lines in metres, with how wide an opening each needs.
         class Line(val x: DoubleArray, val y: DoubleArray, val half: Double)
         val lines = ArrayList<Line>()
-        for (w in map.roads + map.paths) {
-            val r = w.line
+        for ((kind, _, r) in map.roads + map.paths) {
             if (r.size < 2) continue
-            val half = when (w.kind) {
+            val half = when (kind) {
                 "footway", "path", "steps", "pedestrian", "corridor", "cycleway" -> 1.9
                 else -> 3.0
             }
@@ -101,7 +100,7 @@ object Passages {
                             if (abs(den) < 1e-9) continue
                             val s = ((ex - ax) * fy - (ey - ay) * fx) / den
                             val t = ((ex - ax) * dy - (ey - ay) * dx) / den
-                            if (s < 0 || s > 1 || t < 0 || t > 1) continue
+                            if (s !in 0.0..1.0 || t < 0 || t > 1) continue
                             crosses += Cross(run + s * len, Passage(bi, w.ring, e, t, l.half))
                         }
                     }

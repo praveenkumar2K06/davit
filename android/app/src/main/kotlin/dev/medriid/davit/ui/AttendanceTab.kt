@@ -28,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -218,7 +217,6 @@ private fun CourseCard(row: AttendanceRow, remaining: Int?, history: List<Attend
 }
 
 /** Present: filled ink B. Absent: filled ink A. On duty: an ink-B ring. Anything else: a faint dot. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HistoryDots(days: List<AttendanceDay>) {
     val inks = LocalInks.current

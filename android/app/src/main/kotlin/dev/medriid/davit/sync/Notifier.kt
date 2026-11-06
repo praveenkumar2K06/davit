@@ -15,6 +15,7 @@ import dev.medriid.davit.MainActivity
 import dev.medriid.davit.R
 import dev.medriid.davit.data.Alert
 import dev.medriid.davit.data.AlertChannel
+import androidx.core.content.edit
 
 /**
  * Posts [Alert]s, each at most once: keys already sent are remembered (the last few
@@ -60,12 +61,15 @@ object Notifier {
                 // Permission revoked between the check and the post; nothing to do.
             }
         }
-        prefs.edit().putString(K_SENT, (sent + fresh.map { it.key }).takeLast(KEEP).joinToString("\n")).apply()
+        prefs.edit {
+            putString(
+                K_SENT,
+                (sent + fresh.map { it.key }).takeLast(KEEP).joinToString("\n"))}
     }
 
     /** Sign-out: forget what was sent, so a new account starts clean. */
     fun forget(context: Context) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { clear() }
         NotificationManagerCompat.from(context).cancelAll()
     }
 

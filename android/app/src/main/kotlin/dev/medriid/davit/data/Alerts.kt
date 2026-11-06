@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.floor
 
 enum class AlertChannel(val id: String, val title: String) {
     Attendance("attendance", "Attendance"),
@@ -45,9 +46,9 @@ internal fun watchAlerts(old: HomeFeeds, new: HomeFeeds, today: LocalDate, prefs
         }
     }
     val before = old.windows.associateBy { it.id }
-    for (w in new.windows) {
-        if (w.open && before[w.id]?.open == false) {
-            out += Alert(AlertChannel.Notices, "win:${w.id}|$today", "${w.title} is open", "VTOP has opened it. Check the dates and apply there.")
+    for ((id, title, open) in new.windows) {
+        if (open && before[id]?.open == false) {
+            out += Alert(AlertChannel.Notices, "win:$id|$today", "$title is open", "VTOP has opened it. Check the dates and apply there.")
         }
     }
     return out
@@ -81,11 +82,11 @@ fun alertsFor(
     val out = mutableListOf<Alert>()
 
     // Your own reminders: today and tomorrow, like assignments.
-    for (r in reminders) {
+    for ((id, title, date) in reminders) {
         if (!prefs.deadlines) break
-        val days = r.date.toEpochDay() - today.toEpochDay()
+        val days = date.toEpochDay() - today.toEpochDay()
         if (days == 0L || days == 1L) {
-            out += Alert(AlertChannel.Deadlines, "rem:${r.id}|$days", (if (days == 0L) "Today: " else "Tomorrow: ") + r.title, "Your reminder")
+            out += Alert(AlertChannel.Deadlines, "rem:$id|$days", (if (days == 0L) "Today: " else "Tomorrow: ") + title, "Your reminder")
         }
     }
 
@@ -140,13 +141,13 @@ fun alertsFor(
     // Registration: a window VTOP has just announced.
     if (prefs.notices && old.feeds.dailyAt > 0) {
         val clock = DateTimeFormatter.ofPattern("EEE d MMM, h:mm a", Locale.ENGLISH)
-        for (w in new.feeds.registration) {
-            val start = w.start ?: continue
+        for ((_, semester, start1, end) in new.feeds.registration) {
+            val start = start1 ?: continue
             if (start.toLocalDate().isBefore(today) || old.feeds.registration.any { it.start == start }) continue
             out += Alert(
                 AlertChannel.Notices, "reg:$start",
-                "${w.semester.ifBlank { "Course" }} registration",
-                "Opens ${start.format(clock)}" + (w.end?.let { " · closes ${it.format(DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH))}" } ?: ""),
+                "${semester.ifBlank { "Course" }} registration",
+                "Opens ${start.format(clock)}" + (end?.let { " · closes ${it.format(DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH))}" } ?: ""),
             )
         }
     }
@@ -158,36 +159,36 @@ fun alertsFor(
     // on a change of semester, where every mark would look new.
     if (prefs.marks && old.marks.isNotEmpty() && old.semester.id == new.semester.id) {
         val seen = old.marks.flatMap { c -> c.items.filter { it.scored != null }.map { c.classId + "|" + it.title } }.toSet()
-        for (c in new.marks) for (m in c.items) {
-            val scored = m.scored ?: continue
-            if ((c.classId + "|" + m.title) in seen) continue
-            val score = "${num(scored)}/${m.max?.let(::num) ?: "?"}"
-            out += Alert(AlertChannel.Marks, "mark:${c.classId}|${m.title}", "New mark · ${c.courseName}", "${m.title}: $score")
+        for ((classId, _, courseName, _, items) in new.marks) for ((title, max, _, _, scored1) in items) {
+            val scored = scored1 ?: continue
+            if ((classId + "|" + title) in seen) continue
+            val score = "${num(scored)}/${max?.let(::num) ?: "?"}"
+            out += Alert(AlertChannel.Marks, "mark:$classId|$title", "New mark · $courseName", "$title: $score")
         }
     }
 
     // Deadlines: unsubmitted assignments due today or tomorrow, exams tomorrow.
-    for (c in new.assignments) for (a in c.items) {
+    for ((classId, _, courseName, _, items) in new.assignments) for ((title, _, _, due1, updated) in items) {
         if (!prefs.deadlines) break
-        if (a.updated != null) continue
-        val due = vtopDate(a.due) ?: continue
+        if (updated != null) continue
+        val due = vtopDate(due1) ?: continue
         val days = due.toEpochDay() - today.toEpochDay()
         if (days == 0L || days == 1L) {
             out += Alert(
-                AlertChannel.Deadlines, "due:${c.classId}|${a.title}|${a.due}|$days",
-                (if (days == 0L) "Due today: " else "Due tomorrow: ") + a.title,
-                c.courseName + " · not submitted yet",
+                AlertChannel.Deadlines, "due:$classId|$title|$due1|$days",
+                (if (days == 0L) "Due today: " else "Due tomorrow: ") + title,
+                courseName + " · not submitted yet",
             )
         }
     }
-    for (e in new.exams) {
+    for ((classId, _, courseName, type, date, _, time, venue, seat) in new.exams) {
         if (!prefs.exams) break
-        val day = vtopDate(e.date) ?: continue
+        val day = vtopDate(date) ?: continue
         if (day.toEpochDay() - today.toEpochDay() != 1L) continue
         out += Alert(
-            AlertChannel.Deadlines, "exam:${e.classId}|${e.type}|${e.date}",
-            "${e.type.ifBlank { "Exam" }} tomorrow: ${e.courseName}",
-            listOf(e.time, e.venue, e.seat.takeIf { it.isNotBlank() }?.let { "Seat $it" })
+            AlertChannel.Deadlines, "exam:$classId|$type|$date",
+            "${type.ifBlank { "Exam" }} tomorrow: $courseName",
+            listOf(time, venue, seat.takeIf { it.isNotBlank() }?.let { "Seat $it" })
                 .filter { !it.isNullOrBlank() }.joinToString(" · "),
         )
     }
@@ -238,4 +239,4 @@ fun classReminders(
 
 /** "8.5", "10", never "10.0". */
 internal fun num(v: Double): String =
-    if (v == Math.floor(v)) v.toLong().toString() else "%.2f".format(Locale.ENGLISH, v).trimEnd('0').trimEnd('.')
+    if (v == floor(v)) v.toLong().toString() else "%.2f".format(Locale.ENGLISH, v).trimEnd('0').trimEnd('.')

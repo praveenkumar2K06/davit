@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,7 +56,11 @@ import java.util.Locale
  * days; then the best timetables that fit, each a tap from your plan.
  */
 @Composable
-internal fun ColumnScope.SmartFfcs(semester: String, categories: List<Pair<String, String>>, onUse: (Int, List<PlanPick>) -> Unit) {
+internal fun SmartFfcs(
+    semester: String,
+    categories: List<Pair<String, String>>,
+    onUse: (Int, List<PlanPick>) -> Unit
+) {
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val scope = rememberCoroutineScope()
@@ -90,10 +93,10 @@ internal fun ColumnScope.SmartFfcs(semester: String, categories: List<Pair<Strin
                 Column(Modifier.weight(1f)) {
                     InkText("${s.code} ${state.aliases.courseName(s.code, s.title)}", style = RisoType.body.copy(fontWeight = FontWeight.SemiBold), maxLines = 2)
                     InkText(
-                        if (classes == null) "Reading its classes…"
-                        else classes.groupBy { it.type }.entries.joinToString(" · ") { (type, list) ->
+                        classes?.groupBy { it.type }?.entries?.joinToString(" · ") { (type, list) ->
                             "${type.ifBlank { "Class" }}: ${list.map { it.slot }.distinct().size} slots, ${list.map { facultyKey(it.faculty) }.distinct().size} faculty"
-                        }.ifBlank { "No classes allotted" },
+                        }?.ifBlank { "No classes allotted" }
+                            ?: "Reading its classes…",
                         style = RisoType.small,
                     )
                 }

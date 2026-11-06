@@ -27,7 +27,7 @@ object Updates {
         val req = Request.Builder().url(LATEST).header("Accept", "application/vnd.github+json").build()
         http.newCall(req).execute().use { res ->
             check(res.isSuccessful) { "GitHub answered ${res.code}" }
-            return parse(res.body?.string().orEmpty())
+            return parse(res.body.string().orEmpty())
         }
     }
 

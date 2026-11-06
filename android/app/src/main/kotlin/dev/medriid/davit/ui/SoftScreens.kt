@@ -1,7 +1,5 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.data.bannerText
-import dev.medriid.davit.data.remarkFor
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -50,14 +48,15 @@ import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.Reminder
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.atRisk
+import dev.medriid.davit.data.bannerText
 import dev.medriid.davit.data.clock
 import dev.medriid.davit.data.hint
 import dev.medriid.davit.data.isLabType
-import dev.medriid.davit.data.key
 import dev.medriid.davit.data.overallPercent
 import dev.medriid.davit.data.percent
 import dev.medriid.davit.data.planFor
 import dev.medriid.davit.data.remainingFor
+import dev.medriid.davit.data.remarkFor
 import dev.medriid.davit.data.vtopDate
 import dev.medriid.davit.data.weekOf
 import dev.medriid.davit.design.HalftoneBar
@@ -70,9 +69,7 @@ import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoIcon
 import dev.medriid.davit.design.RisoType
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.Locale
 
 // The Soft look's own layouts: a calm app home rather than a printed sheet. Only shown
 // when the Soft colours are picked; every other look keeps its own screens.
@@ -474,7 +471,6 @@ private fun initials(name: String): String =
 private val SoftCardShape = RoundedCornerShape(26.dp)
 
 /** Chips that wrap onto as many lines as they need. */
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun FlowRowCompat(spacing: Dp, content: @Composable () -> Unit) {
     androidx.compose.foundation.layout.FlowRow(

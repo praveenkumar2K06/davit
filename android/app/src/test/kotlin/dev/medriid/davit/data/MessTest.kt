@@ -31,9 +31,9 @@ class MessTest {
 
     @Test
     fun aRowOnlyCoversOneWeekday() {
-        for (row in mess.sheets.single().rows) {
-            val weekdays = row.dates.map { LocalDate.of(2026, 11, it).dayOfWeek }.toSet()
-            assertEquals(row.dates.toString(), 1, weekdays.size)
+        for ((dates) in mess.sheets.single().rows) {
+            val weekdays = dates.map { LocalDate.of(2026, 11, it).dayOfWeek }.toSet()
+            assertEquals(dates.toString(), 1, weekdays.size)
         }
         assertEquals(DayOfWeek.SUNDAY, LocalDate.of(2026, 11, 1).dayOfWeek)
     }

@@ -12,7 +12,8 @@ class ParsersTest {
 
     @Test
     fun spreadsheetLeftoversAreNotRemarks() {
-        for (junk in listOf("SUM(G48:K48)", "sum(g48:k48)", "=G48+H48", "=SUM(A1:A5)", "AVERAGE(B2,C2)", "AVERAGE(B2, C2)", "ROUND(SUM(G48:K48),0)", "SUM(${'$'}G${'$'}48:${'$'}K${'$'}48)", "G48:K48", "#REF!", "#N/A", "#DIV/0!")) {
+        for (junk in listOf("SUM(G48:K48)", "sum(g48:k48)", "=G48+H48", "=SUM(A1:A5)", "AVERAGE(B2,C2)", "AVERAGE(B2, C2)", "ROUND(SUM(G48:K48),0)",
+            "SUM(${'$'}G$48:${'$'}K$48)", "G48:K48", "#REF!", "#N/A", "#DIV/0!")) {
             assertTrue(junk, Parsers.isSheetLeftover(junk))
         }
         for (real in listOf("Absent for CAT", "Retest (Q2)", "Good", "Re-evaluated", "A1", "L19", "Reviewed(see Q3)", "Marks 45/50")) {

@@ -45,9 +45,9 @@ fun overallPercent(rows: List<AttendanceRow>): Int? {
     if (held.isEmpty()) return null
     var num = BigInteger.ZERO
     var den = BigInteger.ONE
-    for (r in held) {
-        val t = r.total.toBigInteger()
-        num = num * t + r.attended.toBigInteger() * den
+    for ((_, _, _, attended, total) in held) {
+        val t = total.toBigInteger()
+        num = num * t + attended.toBigInteger() * den
         den *= t
     }
     return (num * 100.toBigInteger() / (den * held.size.toBigInteger())).toInt()
@@ -166,7 +166,7 @@ fun AcademicCalendar.dayNote(date: LocalDate): String? {
  * ran Monday's order. Only dates whose slots agree on one weekday are kept.
  */
 fun Snapshot.observedDayOrders(): Map<LocalDate, Int> =
-    history.values.flatten()
+    history.values.asSequence().flatten()
         .mapNotNull { d ->
             // VTOP's Day/Time column says the order outright; the slot is the fallback.
             val days = d.dayOrder?.let { setOf(it) } ?: SlotTimes.meetings(d.slot).map { m -> m.day }.toSet()
@@ -177,7 +177,7 @@ fun Snapshot.observedDayOrders(): Map<LocalDate, Int> =
         .mapNotNull { (date, sets) ->
             // Every class that day must fit one weekday; a lab pair and a theory slot can both point to it.
             sets.reduce { a, b -> a intersect b }.singleOrNull()?.let { date to it }
-        }
+        }.toList()
         .toMap()
 
 /** The calendar, corrected wherever your attendance shows a past day followed another order. */

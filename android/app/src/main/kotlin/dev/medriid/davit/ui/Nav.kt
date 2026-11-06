@@ -1,7 +1,6 @@
 package dev.medriid.davit.ui
 
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -93,7 +92,7 @@ sealed class Route(val id: String) {
             }
         }
 
-        val StackSaver = listSaver<SnapshotStateList<Route>, String>(
+        val StackSaver = listSaver(
             save = { s -> s.map { it.id } },
             restore = { ids -> ids.mapNotNull(::parse).toMutableStateList() },
         )
@@ -123,7 +122,6 @@ class Nav(private val stack: SnapshotStateList<Route>, private val onTab: (Int) 
 
 val LocalNav = staticCompositionLocalOf<Nav> { error("no Nav") }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 val LocalShared = compositionLocalOf<SharedTransitionScope?> { null }
 
 val LocalAnimScope = compositionLocalOf<AnimatedVisibilityScope?> { null }
@@ -132,7 +130,6 @@ val LocalAnimScope = compositionLocalOf<AnimatedVisibilityScope?> { null }
  * The container transform: an element marked with [key] in a list and the screen marked
  * with the same key grow into each other. Nothing when animations are off.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun Modifier.sharedCard(key: String): Modifier {
     val shared = LocalShared.current ?: return this

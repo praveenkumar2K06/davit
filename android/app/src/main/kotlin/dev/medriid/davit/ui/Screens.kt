@@ -6,7 +6,6 @@ import dev.medriid.davit.design.Rule
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -83,7 +81,6 @@ internal fun RouteScreen(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val inks = LocalInks.current
-    val nav = LocalNav.current
     Box(Modifier.fillMaxSize().sharedCard(route.sharedKey).background(inks.paper)) {
         PullBox(refreshing, onRefresh, Modifier.fillMaxSize()) {
             Column(
@@ -111,7 +108,6 @@ internal fun RouteLazyScreen(
     content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit,
 ) {
     val inks = LocalInks.current
-    val nav = LocalNav.current
     Box(Modifier.fillMaxSize().sharedCard(route.sharedKey).background(inks.paper)) {
         PullBox(refreshing, onRefresh, Modifier.fillMaxSize()) {
             androidx.compose.foundation.lazy.LazyColumn(
@@ -187,7 +183,6 @@ internal fun BackButton(onClick: () -> Unit) {
 }
 
 /** Pull to refresh with the riso drum; a plain box without [onRefresh]. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun PullBox(refreshing: Boolean, onRefresh: (() -> Unit)?, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     if (onRefresh == null) {
@@ -267,7 +262,6 @@ internal fun Repo.fetchFile(
  * anything else goes to whichever app opens it. Save keeps a copy for offline; long-press
  * on a saved one to delete or share it.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun FileRow(
     key: String,

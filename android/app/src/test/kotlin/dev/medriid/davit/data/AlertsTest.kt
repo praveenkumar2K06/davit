@@ -94,7 +94,7 @@ class AlertsTest {
 class ReminderAlertsTest {
     @Test
     fun remindersAlertTodayAndTomorrow() {
-        val sem = dev.medriid.davit.vtop.Semester("VL1", "Fall")
+        val sem = Semester("VL1", "Fall")
         val s = Snapshot(sem, listOf(sem), emptyList(), emptyList(), 0, emptyList())
         val today = LocalDate.of(2026, 10, 28)
         val reminders = listOf(

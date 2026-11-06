@@ -23,6 +23,9 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withMatrix
+import androidx.core.graphics.withClip
 
 /** Where the map looks from: centre in scene metres, pixels per metre, turn (radians), and how far it leans (0 flat, 1 full 2.5D). */
 data class Camera(val x: Float, val y: Float, val scale: Float, val rot: Float, val tilt: Float)
@@ -101,7 +104,7 @@ class MapPainter(context: Context, private val scene: Scene, private val inks: I
     init {
         // One dot per cell, repeated: the halftone screen, in the text ink.
         val cell = max(4, dp(5.5f).toInt())
-        val tile = Bitmap.createBitmap(cell, cell, Bitmap.Config.ARGB_8888)
+        val tile = createBitmap(cell, cell)
         Canvas(tile).drawCircle(cell / 2f, cell / 2f, cell * 0.3f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = argb(inks.text) })
         dots.shader = BitmapShader(tile, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
     }
@@ -253,13 +256,14 @@ class MapPainter(context: Context, private val scene: Scene, private val inks: I
         // Shadows first, all of them, so no shadow falls across a nearer building's walls.
         if (lift > 0.01f) {
             path.reset()
-            for (b in solids) {
-                val off = b.height * 0.55f * (lift / 0.85f)
+            for ((shape, _, height1) in solids) {
+                val off = height1 * 0.55f * (lift / 0.85f)
                 // Thrown away from a light low in the south-west.
                 val ox = off * 0.7f
                 val oy = off * 0.7f
-                path.moveTo(sx(b.shape.x[0] + ox, b.shape.y[0] + oy), sy(b.shape.x[0] + ox, b.shape.y[0] + oy))
-                for (i in 1 until b.shape.size) path.lineTo(sx(b.shape.x[i] + ox, b.shape.y[i] + oy), sy(b.shape.x[i] + ox, b.shape.y[i] + oy))
+                path.moveTo(sx(shape.x[0] + ox, shape.y[0] + oy), sy(shape.x[0] + ox, shape.y[0] + oy))
+                for (i in 1 until shape.size) path.lineTo(sx(shape.x[i] + ox, shape.y[i] + oy), sy(
+                    shape.x[i] + ox, shape.y[i] + oy))
                 path.close()
             }
             shadeDots(if (night) 0.45f else 0.32f)
@@ -285,7 +289,15 @@ class MapPainter(context: Context, private val scene: Scene, private val inks: I
         }
 
         val edgeW = dp(1.1f)
-        for (b in solids) drawSolid(canvas, b.shape, b.holes, b.height, b.tone, b.selected, b.letter, edgeW, b.arches)
+        for ((shape, holes, height1, tone, selected, letter, arches) in solids) drawSolid(canvas,
+            shape,
+            holes,
+            height1,
+            tone,
+            selected,
+            letter, edgeW,
+            arches
+        )
 
         if (r != null) {
             drawRoute(canvas, o.routePhase, ghost = true)
@@ -331,26 +343,25 @@ class MapPainter(context: Context, private val scene: Scene, private val inks: I
         if (px < -reach || px > w + reach || py < -reach || py > h + reach) return
         // Text space (metres, x east, y down the page) onto the ground plane, then the screen.
         signMatrix.setValues(floatArrayOf(cosR * s, sinR * s, px, -sinR * s * squash, cosR * s * squash, py, 0f, 0f, 1f))
-        canvas.save()
-        canvas.concat(signMatrix)
-        sign.typeface = display
-        sign.textSize = 46f
-        sign.style = Paint.Style.FILL
-        // Ink B a little off register under ink A, like everything else on the sheet.
-        sign.color = argb(inks.b, 0.22f)
-        canvas.drawText("jeman", 1.3f, 1.3f, sign)
-        sign.color = argb(inks.a, 0.36f)
-        canvas.drawText("jeman", 0f, 0f, sign)
-        sign.style = Paint.Style.STROKE
-        sign.strokeWidth = max(0.5f, dp(1.1f) / s)
-        sign.color = argb(inks.a, 0.75f)
-        canvas.drawText("jeman", 0f, 0f, sign)
-        sign.style = Paint.Style.FILL
-        sign.typeface = typeface
-        sign.textSize = 8.5f
-        sign.color = argb(inks.text, 0.6f)
-        canvas.drawText("campus map by", 0f, -39f, sign)
-        canvas.restore()
+        canvas.withMatrix(signMatrix) {
+            sign.typeface = display
+            sign.textSize = 46f
+            sign.style = Paint.Style.FILL
+            // Ink B a little off register under ink A, like everything else on the sheet.
+            sign.color = argb(inks.b, 0.22f)
+            drawText("jeman", 1.3f, 1.3f, sign)
+            sign.color = argb(inks.a, 0.36f)
+            drawText("jeman", 0f, 0f, sign)
+            sign.style = Paint.Style.STROKE
+            sign.strokeWidth = max(0.5f, dp(1.1f) / s)
+            sign.color = argb(inks.a, 0.75f)
+            drawText("jeman", 0f, 0f, sign)
+            sign.style = Paint.Style.FILL
+            sign.typeface = typeface
+            sign.textSize = 8.5f
+            sign.color = argb(inks.text, 0.6f)
+            drawText("campus map by", 0f, -39f, sign)
+        }
     }
 
     /** The route in ink A over an ink edge with paper dashes running to the end; [ghost] is the faint copy over buildings. */
@@ -403,12 +414,11 @@ class MapPainter(context: Context, private val scene: Scene, private val inks: I
         fill.color = if (inks.dark) argb(Color.Black, 0.72f) else argb(inks.text, 0.74f)
         canvas.drawPath(archPath, fill)
         if (routeOn) {
-            canvas.save()
-            canvas.clipPath(archPath)
-            stroke.color = argb(inks.a)
-            stroke.strokeWidth = dp(5.5f)
-            canvas.drawPath(routePath, stroke)
-            canvas.restore()
+            canvas.withClip(archPath) {
+                stroke.color = argb(inks.a)
+                stroke.strokeWidth = dp(5.5f)
+                drawPath(routePath, stroke)
+            }
         }
         stroke.color = argb(inks.text, 0.9f)
         stroke.strokeWidth = edgeW
@@ -495,7 +505,7 @@ class MapPainter(context: Context, private val scene: Scene, private val inks: I
     }
 
     /** Which places get a pin first when pins crowd: the ones people look for most, and a building before the offices inside it. */
-    private val pinOrder: List<ScenePoi> = scene.pois.filter { !it.poi.unnamed }.sortedWith(compareBy<ScenePoi>({ p ->
+    private val pinOrder: List<ScenePoi> = scene.pois.filter { !it.poi.unnamed }.sortedWith(compareBy({ p ->
         when (p.poi.cat) {
             "gate" -> 0
             "mess" -> 1

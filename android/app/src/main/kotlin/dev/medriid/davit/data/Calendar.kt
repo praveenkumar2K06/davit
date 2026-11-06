@@ -41,12 +41,12 @@ data class AcademicCalendar(
     /** Contiguous runs of the same exam type: "CAT-1 7–15 Sep". */
     fun examWindows(): List<Triple<String, LocalDate, LocalDate>> {
         val out = mutableListOf<Triple<String, LocalDate, LocalDate>>()
-        for (d in days.filter { it.exam }.sortedBy { it.date }) {
+        for ((date, type) in days.filter { it.exam }.sortedBy { it.date }) {
             val last = out.lastOrNull()
-            if (last != null && last.first == d.type && !d.date.isAfter(last.third.plusDays(3))) {
-                out[out.lastIndex] = last.copy(third = d.date)
+            if (last != null && last.first == type && !date.isAfter(last.third.plusDays(3))) {
+                out[out.lastIndex] = last.copy(third = date)
             } else {
-                out += Triple(d.type, d.date, d.date)
+                out += Triple(type, date, date)
             }
         }
         return out

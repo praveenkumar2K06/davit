@@ -52,6 +52,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.core.graphics.createBitmap
 
 /** An open PDF. Android's renderer does one thing at a time, so everything goes through [lock]. */
 private class PdfDocument(file: File) {
@@ -75,7 +76,7 @@ private class PdfDocument(file: File) {
         withContext(Dispatchers.IO) {
             renderer.openPage(index).use { page ->
                 val height = (width.toLong() * page.height / page.width.coerceAtLeast(1)).toInt().coerceAtLeast(1)
-                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                createBitmap(width, height).also {
                     it.eraseColor(Color.WHITE)
                     page.render(it, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 }

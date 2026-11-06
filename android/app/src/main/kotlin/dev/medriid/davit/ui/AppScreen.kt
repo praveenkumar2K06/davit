@@ -1,41 +1,14 @@
 package dev.medriid.davit.ui
 
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.key
-import androidx.compose.ui.unit.Dp
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.shape.RoundedCornerShape
-import dev.medriid.davit.data.bannerText
-import dev.medriid.davit.data.BannerStat
-import dev.medriid.davit.data.withDynamicColor
-import androidx.compose.foundation.layout.size
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.shape.CircleShape
-import dev.medriid.davit.design.IconGlyph
-import dev.medriid.davit.design.LocalInks
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.ExperimentalMaterial3Api
-import android.graphics.Color as AndroidColor
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.activity.compose.BackHandler
-import androidx.compose.ui.platform.LocalContext
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -44,15 +17,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import dev.medriid.davit.design.DrumIndicator
-import dev.medriid.davit.design.Overprint
-import dev.medriid.davit.design.PrintingSheet
-import dev.medriid.davit.design.rememberHaptics
-import dev.medriid.davit.design.rememberMotionEnabled
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -64,47 +33,71 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.medriid.davit.data.BannerStat
 import dev.medriid.davit.data.Repo
 import dev.medriid.davit.data.UiState
+import dev.medriid.davit.data.bannerText
+import dev.medriid.davit.data.withDynamicColor
+import dev.medriid.davit.design.DrumIndicator
 import dev.medriid.davit.design.Grain
 import dev.medriid.davit.design.Heading
+import dev.medriid.davit.design.IconGlyph
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
-import dev.medriid.davit.design.InkChip
-import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.InkText
+import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.NavItem
+import dev.medriid.davit.design.Overprint
+import dev.medriid.davit.design.PrintingSheet
 import dev.medriid.davit.design.RisoIcon
 import dev.medriid.davit.design.RisoNavBar
 import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Seal
+import dev.medriid.davit.design.rememberHaptics
+import dev.medriid.davit.design.rememberMotionEnabled
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
+import android.graphics.Color as AndroidColor
 
 internal val Gutter = 18.dp
 
@@ -134,7 +127,7 @@ fun AppScreen(repo: Repo, locked: Boolean = false, onUnlock: () -> Unit = {}) {
     val inks = state.palette.inks(dark).withDynamicColor(context)
     // Where you are (tab and open screens) lives outside the rebuild below, so changing style keeps you there.
     val tab = rememberSaveable { mutableIntStateOf(0) }
-    val stack = rememberSaveable(saver = Route.StackSaver) { mutableStateListOf<Route>() }
+    val stack = rememberSaveable(saver = Route.StackSaver) { mutableStateListOf() }
     LaunchedEffect(state.signedIn) {
         if (!state.signedIn) {
             stack.clear()
@@ -166,7 +159,6 @@ fun AppScreen(repo: Repo, locked: Boolean = false, onUnlock: () -> Unit = {}) {
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun Main(state: UiState, repo: Repo, tabState: MutableIntState, stack: SnapshotStateList<Route>) {
     var tab by tabState
@@ -495,7 +487,7 @@ internal fun ago(at: Long): String {
     LaunchedEffect(at) {
         while (true) {
             now = System.currentTimeMillis()
-            delay(60_000.milliseconds.milliseconds)
+            delay(60_000.milliseconds)
         }
     }
     val min = (now - at) / 60_000
@@ -543,7 +535,7 @@ private fun FirstSync(busy: String?) {
     Column(
         Modifier.fillMaxSize().padding(horizontal = Gutter),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+        verticalArrangement = Arrangement.Center,
     ) {
         Seal(size = 72.dp)
         Spacer(Modifier.height(18.dp))
@@ -584,7 +576,7 @@ private fun LockScreen(onUnlock: () -> Unit) {
     Column(
         Modifier.fillMaxSize().padding(horizontal = Gutter),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+        verticalArrangement = Arrangement.Center,
     ) {
         Seal(size = 72.dp)
         Spacer(Modifier.height(22.dp))

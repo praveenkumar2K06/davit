@@ -1,6 +1,7 @@
 package dev.medriid.davit.vtop
 
 import java.io.DataInputStream
+import kotlin.math.round
 
 /** Decoded image as packed ARGB ints, row-major. */
 class Pixels(val width: Int, val height: Int, val argb: IntArray)
@@ -36,7 +37,7 @@ class CaptchaSolver private constructor(
             val b = c and 0xFF
             val mx = maxOf(r, g, b)
             val mn = minOf(r, g, b)
-            sat[i] = if (mx == 0) 0 else Math.rint((mx - mn) * 255.0 / mx).toInt()
+            sat[i] = if (mx == 0) 0 else round((mx - mn) * 255.0 / mx).toInt()
         }
         val out = StringBuilder(6)
         val bits = DoubleArray(CELL_H * CELL_W)

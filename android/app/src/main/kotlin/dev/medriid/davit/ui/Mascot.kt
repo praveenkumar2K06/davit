@@ -1,18 +1,11 @@
 package dev.medriid.davit.ui
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +15,11 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +28,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -44,6 +41,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.medriid.davit.design.InkChip
 import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.InkText
@@ -260,7 +258,6 @@ private fun DrawScope.drawMascot(m: Mascot, inks: Inks) = with(Grid(size.minDime
 }
 
 /** Account-sheet editor, top to bottom: preview and type, colour, hair, extra. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MascotEditor(mascot: Mascot, onChange: (Mascot) -> Unit) {
     val inks = LocalInks.current
@@ -309,10 +306,9 @@ fun MascotEditor(mascot: Mascot, onChange: (Mascot) -> Unit) {
 }
 
 /** Chips where the chosen one is solid; wraps onto more lines when it runs out of room. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
-    val inks = dev.medriid.davit.design.LocalInks.current
+    val inks = LocalInks.current
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEachIndexed { i, text ->
             if (inks.material) {
@@ -336,7 +332,7 @@ internal fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> 
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = inks.a,
                         selectedLabelColor = labelColor,
-                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        containerColor = Color.Transparent,
                         labelColor = labelColor,
                     ),
                     border = FilterChipDefaults.filterChipBorder(

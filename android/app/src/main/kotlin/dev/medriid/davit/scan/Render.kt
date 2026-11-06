@@ -11,6 +11,8 @@ import java.io.File
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.roundToInt
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 /**
  * Turns a photo into a page image: upright (EXIF), cut to its four corners and
@@ -54,7 +56,10 @@ object Render {
         val side = max(b.width, b.height)
         if (side <= maxSide) return b
         val k = maxSide.toFloat() / side
-        return Bitmap.createScaledBitmap(b, (b.width * k).roundToInt().coerceAtLeast(1), (b.height * k).roundToInt().coerceAtLeast(1), true)
+        return b.scale(
+            (b.width * k).roundToInt().coerceAtLeast(1),
+            (b.height * k).roundToInt().coerceAtLeast(1)
+        )
             .also { if (it != b) b.recycle() }
     }
 
@@ -69,7 +74,7 @@ object Render {
         val dst = floatArrayOf(0f, 0f, outW.toFloat(), 0f, outW.toFloat(), outH.toFloat(), 0f, outH.toFloat())
         val m = Matrix()
         if (!m.setPolyToPoly(src, 0, dst, 0, 4)) return b
-        val out = Bitmap.createBitmap(outW, outH, Bitmap.Config.ARGB_8888)
+        val out = createBitmap(outW, outH)
         Canvas(out).apply {
             drawColor(android.graphics.Color.WHITE)
             drawBitmap(b, m, Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG))
