@@ -72,10 +72,10 @@ class LeaveTest {
         assertEquals(30, one.after.attended)
         assertEquals(40, one.after.total)
         assertEquals(LeaveVerdict.Safe, one.verdict)
-        // 29/39 → 29/40 is 72.5%: below, and with few classes left this semester, out of reach.
+        // 29/39 → 29/40 is 72.5% (ceil 73%): below 75%, but recoverable by attending the remaining 3 classes (32/43 = 74.4% → ceil 75%).
         val two = snap(row(29, 39)).afterLeave(setOf(LocalDate.of(2026, 10, 26)), monday).first { it.row.classId == "VL1A" }
         assertTrue(two.after.atRisk)
-        assertEquals(LeaveVerdict.OutOfReach, two.verdict)
+        assertEquals(LeaveVerdict.Recoverable, two.verdict)
     }
 
     @Test

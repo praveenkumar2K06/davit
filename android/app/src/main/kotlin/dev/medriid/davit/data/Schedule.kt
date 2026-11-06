@@ -24,21 +24,19 @@ fun isLabType(type: String) = "lab" in type.lowercase()
 val AttendanceRow.key: String get() = "$courseCode|$classType"
 
 /*
- * The 75% rule (with CGPA under 9) is on the exact fraction: 30/40 is in, 74.5% is out
- * even though VTOP may print it as 75%. So the shown percentage rounds *down* (a "75%"
- * on screen always means you're in), and every check below is integer arithmetic on
- * attended/total, with 75% as 4·attended ≥ 3·total, so no floating-point edge can
- * tip a borderline course either way.
+ * The 75% rule (with CGPA under 9) is on the exact fraction: 30/40 is in, 74.5% is also not out
+ * as VTOP may print it as 75%. So the shown percentage rounds *up* (ceil),
+ * and every check below is integer arithmetic on attended/total, with 75%,
  */
 
-/** attended/total as a whole percentage, rounded down. */
+/** attended/total as a whole percentage, rounded up (ceil). */
 val AttendanceRow.percent: Int
-    get() = if (total == 0) 100 else attended * 100 / total
+    get() = if (total == 0) 100 else (attended * 100 + total - 1) / total
 
 /**
- * The mean of every course's exact attended/total, rounded down once at the end; each
+ * The mean of every course's exact attended/total, rounded up once at the end; each
  * course counts the same however many classes it has. Exact (a common denominator) so
- * the floor can't slip; null when no course has held a class.
+ * the ceil can't slip; null when no course has held a class.
  */
 fun overallPercent(rows: List<AttendanceRow>): Int? {
     val held = rows.filter { it.total > 0 }
@@ -50,22 +48,24 @@ fun overallPercent(rows: List<AttendanceRow>): Int? {
         num = num * t + attended.toBigInteger() * den
         den *= t
     }
-    return (num * 100.toBigInteger() / (den * held.size.toBigInteger())).toInt()
+    val product = num * 100.toBigInteger()
+    val divisor = den * held.size.toBigInteger()
+    return ((product + divisor - 1.toBigInteger()) / divisor).toInt()
 }
 
-val AttendanceRow.atRisk: Boolean get() = 4 * attended < 3 * total
+val AttendanceRow.atRisk: Boolean get() = percent < 75
 
-/** Classes you can miss in a row from now and still sit at or above 75%. */
+/** Classes you can miss in a row from now and still sit at or above 75% (ceil). */
 val AttendanceRow.canSkipNow: Int
-    get() = ((4 * attended - 3 * total) / 3).coerceAtLeast(0)
+    get() = if (atRisk) 0 else ((100 * attended - 74 * total - 1) / 74).coerceAtLeast(0)
 
-/** Classes to attend in a row to climb back to 75%. */
+/** Classes to attend in a row to climb back to 75% (ceil). */
 val AttendanceRow.mustAttend: Int
-    get() = (3 * total - 4 * attended).coerceAtLeast(0)
+    get() = if (!atRisk) 0 else ((74 * total - 100 * attended) / 26 + 1).coerceAtLeast(0)
 
-/** The percentage (rounded down) after missing the next [n] classes. */
+/** The percentage (rounded up) after missing the next [n] classes. */
 fun AttendanceRow.afterMissing(n: Int): Int =
-    if (total + n == 0) 100 else attended * 100 / (total + n)
+    if (total + n == 0) 100 else (attended * 100 + total + n - 1) / (total + n)
 
 fun AttendanceRow.hint(): String =
     if (atRisk) "attend the next $mustAttend to reach 75%"
@@ -227,8 +227,8 @@ fun countOn(meetings: List<Meeting>, cal: AcademicCalendar?, d: LocalDate, at: L
     return meetings.count { it.day == wd && (d != at.toLocalDate() || it.start > minute) }
 }
 
-/** How many of the [remaining] classes you can miss and still finish at or above 75%. Negative: out of reach. */
-fun AttendanceRow.skipTillEnd(remaining: Int): Int = Math.floorDiv(4 * attended + remaining - 3 * total, 4)
+/** How many of the [remaining] classes you can miss and still finish at or above 75% (ceil). Negative: out of reach. */
+fun AttendanceRow.skipTillEnd(remaining: Int): Int = Math.floorDiv(100 * attended + 26 * remaining - 74 * total - 1, 100)
 
 /** The hint under a course: a semester budget when [remaining] is known, else the next-classes version. */
 fun AttendanceRow.hint(remaining: Int?): String {

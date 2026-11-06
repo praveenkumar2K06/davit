@@ -46,7 +46,7 @@ class AlertsTest {
     fun droppingBelowSeventyFiveAlertsOnce() {
         val alerts = alertsFor(snap(listOf(att(30, 40))), snap(listOf(att(30, 41))), today)
         assertEquals(listOf("Applied Chemistry is below 75%"), alerts.map { it.title })
-        assertEquals("73% (30/41). Attend the next 3 to get back.", alerts[0].text)
+        assertEquals("74% (30/41). Attend the next 2 to get back.", alerts[0].text)
     }
 
     @Test
@@ -116,10 +116,10 @@ class AlertPrefsTest {
     @Test
     fun yourOwnLineWarnsAboveSeventyFive() {
         val p = AlertPrefs(warnBelow = 80)
-        // 40/50 is 80%; 40/51 is 78.4%: below 80, still above 75 with two skips.
+        // 40/50 is 80%; 40/51 is 78.4%: below 80, still above 75 with three skips.
         val alerts = alertsFor(snap(att(40, 50)), snap(att(40, 51)), today, prefs = p)
         assertEquals(listOf("Applied Chemistry is below 80%"), alerts.map { it.title })
-        assertEquals("78% (40/51). Still above 75%: 2 skips left.", alerts.single().text)
+        assertEquals("79% (40/51). Still above 75%: 3 skips left.", alerts.single().text)
         // At the default line, nothing.
         assertTrue(alertsFor(snap(att(40, 50)), snap(att(40, 51)), today).isEmpty())
     }
@@ -167,7 +167,7 @@ class ClassRemindersTest {
         val r = classReminders(snap, AlertPrefs(beforeClass = 10), monday, week = week(row(30, 40))).single()
         assertEquals(java.time.LocalDateTime.of(2026, 10, 26, 8, 50), r.at)
         assertEquals("Applied Chemistry at 09:00 · SJT-401", r.alert.title)
-        assertEquals("75% now. Miss this one and you drop to 73%, below 75.", r.alert.text)
+        assertEquals("75% now. Miss this one and you drop to 74%, below 75.", r.alert.text)
     }
 
     @Test
@@ -175,7 +175,7 @@ class ClassRemindersTest {
         val safe = week(row(40, 45))
         assertTrue(classReminders(snap, AlertPrefs(beforeClass = 10), monday, week = safe).isEmpty())
         val every = classReminders(snap, AlertPrefs(beforeClass = 10, beforeClassNearLine = false), monday, week = safe)
-        assertEquals("88% · 8 skips left.", every.single().alert.text)
+        assertEquals("89% · 9 skips left.", every.single().alert.text)
         // Off, or the class already started: nothing.
         assertTrue(classReminders(snap, AlertPrefs(beforeClass = 0), monday, week = safe).isEmpty())
         assertTrue(classReminders(snap, AlertPrefs(beforeClass = 10, beforeClassNearLine = false), monday.withHour(9).withMinute(30), hours = 12, week = safe).isEmpty())

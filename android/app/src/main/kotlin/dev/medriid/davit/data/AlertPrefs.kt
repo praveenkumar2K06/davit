@@ -101,5 +101,5 @@ data class AlertPrefs(
 /** Theory and lab of one course are muted apart. */
 fun courseKey(code: String, type: String) = "$code|${if (isLabType(type)) "lab" else "theory"}"
 
-/** Below [line] percent on the exact fraction: 39/52 is 75% to the integer but still below 75. */
-fun below(row: AttendanceRow, line: Int) = row.total > 0 && row.attended * 100 < line * row.total
+/** Below [line] percent on ceil percentage: 74% is below 75, 75% is not. */
+fun below(row: AttendanceRow, line: Int) = row.total > 0 && row.percent < line

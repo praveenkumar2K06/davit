@@ -24,14 +24,25 @@ class AttendanceRuleTest {
     }
 
     @Test
-    fun seventyFourPointFiveIsOutEvenWhenVtopSays75() {
+    fun seventyFourPointFiveIsSeventyFive() {
         val r = row(149, 200, vtop = 75)
+        assertFalse(r.atRisk)
+        assertEquals(75, r.percent) // 74.5% rounds up to 75% with ceil
+        assertEquals(0, r.mustAttend)
+        assertEquals(1, r.canSkipNow)
+        assertFalse(row(149, 200 + r.canSkipNow).atRisk)
+        assertTrue(row(149, 201 + r.canSkipNow).atRisk)
+    }
+
+    @Test
+    fun seventyThreePointFiveIsSeventyFour() {
+        val r = row(30, 41, vtop = 74)
         assertTrue(r.atRisk)
         assertEquals(74, r.percent)
-        // 153/204 is exactly 75%; 152/203 isn't.
-        assertEquals(4, r.mustAttend)
-        assertFalse(row(149 + r.mustAttend, 200 + r.mustAttend).atRisk)
-        assertTrue(row(148 + r.mustAttend, 199 + r.mustAttend).atRisk)
+        assertEquals(2, r.mustAttend)
+        assertEquals(0, r.canSkipNow)
+        assertFalse(row(30 + r.mustAttend, 41 + r.mustAttend).atRisk)
+        assertTrue(row(29 + r.mustAttend, 40 + r.mustAttend).atRisk)
     }
 
     @Test
@@ -43,11 +54,8 @@ class AttendanceRuleTest {
     }
 
     @Test
-    fun shownPercentNeverRoundsUp() {
-        for (total in 1..200) for (attended in 0..total) {
-            val r = row(attended, total)
-            if (r.atRisk) assertTrue("$attended/$total shows ${r.percent}%", r.percent < 75)
-            else assertTrue("$attended/$total shows ${r.percent}%", r.percent >= 75)
-        }
+    fun shownPercentRoundsUp() {
+        assertEquals(75, row(7401, 10000).percent) // 74.01% -> 75%
+        assertEquals(74, row(7400, 10000).percent) // 74.00% -> 74%
     }
 }

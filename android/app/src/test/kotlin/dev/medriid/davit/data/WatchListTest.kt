@@ -12,8 +12,8 @@ class WatchListTest {
 
     @Test
     fun underTheLineFirstThenTheLowest() {
-        val s = snap(row("SAFE", 36, 40), row("EDGE", 30, 40), row("LOW", 28, 40), row("NEAR", 32, 40))
-        // 90% isn't near; exactly 75% (0 skips) and 80% (2 skips) are; 70% is under, so first.
+        val s = snap(row("SAFE", 36, 40), row("EDGE", 30, 40), row("LOW", 28, 40), row("NEAR", 31, 40))
+        // LOW is under 75%; EDGE is exactly 75% (0 skips left); NEAR (31/40) has 2 skips left with ceil.
         assertEquals(listOf("LOW", "EDGE", "NEAR"), s.watchList(AlertPrefs()).map { it.courseCode })
     }
 

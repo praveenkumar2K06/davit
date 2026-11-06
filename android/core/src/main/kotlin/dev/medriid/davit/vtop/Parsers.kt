@@ -109,7 +109,7 @@ object Parsers {
                 classType = (if (parts.size >= 3) parts.last() else "").trim(),
                 attended = clean(cells[5].text()).toIntOrNull() ?: 0,
                 total = clean(cells[6].text()).toIntOrNull() ?: 0,
-                vtopPercent = Regex("""\d+""").find(pctText)?.value?.toIntOrNull(),
+                vtopPercent = Regex("""\d+\.?\d*""").find(pctText)?.value?.toDoubleOrNull()?.let { kotlin.math.ceil(it).toInt() },
                 classId = normalizeClassId(m?.groupValues?.get(3).orEmpty()),
                 detail = m?.groupValues?.let { DetailKey(it[1].trim(), it[2].trim(), it[3].trim(), it[4].trim().uppercase()) } ?: DetailKey(),
             )
