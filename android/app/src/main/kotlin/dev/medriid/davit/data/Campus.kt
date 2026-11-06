@@ -102,7 +102,7 @@ private const val HOUR = 60 * MIN
 private const val DAY = 24 * HOUR
 
 /** Loads, caches and refreshes [Campus], one [Section] at a time, on the user's say-so. */
-class CampusStore(private val context: Context, private val repo: Repo) {
+class CampusStore(context: Context, private val repo: Repo) {
     private val file = File(context.filesDir, "campus.enc")
     private val _state = MutableStateFlow(load())
     val state: StateFlow<Campus> = _state

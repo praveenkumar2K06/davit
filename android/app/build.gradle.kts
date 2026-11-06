@@ -89,5 +89,5 @@ dependencies {
     // The demo's fake VTOP (src/debug): writes are tried against it, never the real one.
     debugImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.junit)
-    testImplementation("org.json:json:20260814")
+    testImplementation(libs.json)
 }

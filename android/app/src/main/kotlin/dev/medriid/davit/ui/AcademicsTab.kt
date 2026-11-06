@@ -1,84 +1,84 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.design.InkButton
-import androidx.compose.runtime.mutableStateOf
-import dev.medriid.davit.data.isLabType
-import androidx.compose.foundation.background
-import dev.medriid.davit.design.RisoIcon
-import dev.medriid.davit.design.IconGlyph
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.border
-import dev.medriid.davit.data.facultyKey
-import android.net.Uri
-import java.time.ZoneId
-import java.time.LocalTime
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.clickable
-import android.provider.CalendarContract
-import android.content.Intent
 import android.content.Context
+import android.content.Intent
+import android.provider.CalendarContract
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.text.BasicText
-import dev.medriid.davit.design.printIn
+import androidx.core.net.toUri
 import dev.medriid.davit.data.GradePoints
 import dev.medriid.davit.data.Snapshot
+import dev.medriid.davit.data.facultyKey
+import dev.medriid.davit.data.isLabType
 import dev.medriid.davit.data.neededAverage
 import dev.medriid.davit.data.projectCgpa
-import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.data.vtopDate
+import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.Heading
+import dev.medriid.davit.design.IconGlyph
+import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
+import dev.medriid.davit.design.InkField
 import dev.medriid.davit.design.InkText
+import dev.medriid.davit.design.Kind
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.Overprint
+import dev.medriid.davit.design.RisoIcon
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
+import dev.medriid.davit.design.printIn
 import dev.medriid.davit.ui.map.MapChip
 import dev.medriid.davit.vtop.Assignment
 import dev.medriid.davit.vtop.CourseMarks
 import dev.medriid.davit.vtop.Exam
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
-import androidx.core.net.toUri
-import dev.medriid.davit.design.InkField
-import dev.medriid.davit.design.Kind
+import kotlin.math.floor
 
 /** Marks, assignments, exams, grades, materials and faculty for the selected semester, one segment at a time. */
 @Composable
@@ -138,11 +138,10 @@ private fun MarksSegment(snapshot: Snapshot) {
 
 @Composable
 private fun CourseMarksCard(course: CourseMarks) {
-    val inks = LocalInks.current
     val counted = course.items.filter { it.weighted != null && it.weightage != null }
     val got = counted.sumOf { it.weighted!! }
     val outOf = counted.sumOf { it.weightage!! }
-    InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 4.dp) {
+    InkCard(Modifier.fillMaxWidth(), kind = Kind.Exams, plateOffset = 4.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 InkText(course.courseName, style = RisoType.title, maxLines = 2)
@@ -167,8 +166,12 @@ private fun CourseMarksCard(course: CourseMarks) {
             Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
                     InkText(m.title, style = RisoType.body.copy(fontWeight = FontWeight.SemiBold), maxLines = 2)
-                    val note = listOf(m.status.takeIf { it.isNotBlank() && !it.equals("Present", true) }, m.remark.ifBlank { null })
-                        .filterNotNull().joinToString(" · ")
+                    val note = listOfNotNull(m.status.takeIf {
+                        it.isNotBlank() && !it.equals(
+                            "Present",
+                            true
+                        )
+                    }, m.remark.ifBlank { null }).joinToString(" · ")
                     if (note.isNotEmpty()) InkText(note, style = RisoType.small)
                 }
                 Spacer(Modifier.width(10.dp))
@@ -210,7 +213,7 @@ private fun AssignmentsSegment(snapshot: Snapshot) {
     val nav = LocalNav.current
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         ordered.forEachIndexed { ci, c ->
-            InkCard(Modifier.fillMaxWidth().printIn(ci), kind = dev.medriid.davit.design.Kind.Assignments, plateOffset = 4.dp) {
+            InkCard(Modifier.fillMaxWidth().printIn(ci), kind = Kind.Assignments, plateOffset = 4.dp) {
                 InkText(c.courseName, style = RisoType.title, maxLines = 2)
                 InkText("${c.courseCode} · ${c.courseType}", style = RisoType.small, maxLines = 1)
                 Spacer(Modifier.height(10.dp))
@@ -289,7 +292,7 @@ private fun ExamsSegment(exams: List<Exam>) {
 internal fun ExamCard(exam: Exam, today: LocalDate, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     val day = exam.day()
     val days = day?.let { ChronoUnit.DAYS.between(today, it).toInt() }
-    InkCard(modifier.fillMaxWidth(), onClick = onClick, kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 4.dp) {
+    InkCard(modifier.fillMaxWidth(), onClick = onClick, kind = Kind.Exams, plateOffset = 4.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.width(70.dp)) {
                 Heading(day?.dayOfMonth?.toString() ?: "?", 30.sp)
@@ -332,7 +335,10 @@ internal fun addToCalendar(context: Context, exam: Exam) {
     val intent = Intent(Intent.ACTION_INSERT, CalendarContract.Events.CONTENT_URI)
         .putExtra(CalendarContract.Events.TITLE, "${exam.type.ifBlank { "Exam" }}: ${exam.courseName}")
         .putExtra(CalendarContract.Events.EVENT_LOCATION, exam.venue)
-        .putExtra(CalendarContract.Events.DESCRIPTION, listOf(exam.courseCode, exam.seat.takeIf { it.isNotBlank() }?.let { "Seat $it" }).filterNotNull().joinToString(" · "))
+        .putExtra(CalendarContract.Events.DESCRIPTION,
+            listOfNotNull(
+                exam.courseCode,
+                exam.seat.takeIf { it.isNotBlank() }?.let { "Seat $it" }).joinToString(" · "))
     if (start != null) {
         intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, day.atTime(start).atZone(zone).toInstant().toEpochMilli())
         intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, day.atTime(end ?: start.plusHours(1)).atZone(zone).toInstant().toEpochMilli())
@@ -351,7 +357,6 @@ internal fun addToCalendar(context: Context, exam: Exam) {
  * proctor, HOD and dean follow.
  */
 @Composable
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 private fun FacultySegment(snapshot: Snapshot) {
     val context = LocalContext.current
     val repo = LocalRepo.current
@@ -479,7 +484,7 @@ private fun FacultySegment(snapshot: Snapshot) {
 private fun GradesSegment(snapshot: Snapshot) {
     val g = snapshot.grades
     val heroSize = with(LocalDensity.current) { 56.dp.toSp() }
-    InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Exams) {
+    InkCard(Modifier.fillMaxWidth(), kind = Kind.Exams) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 InkText("CGPA", label = true)
@@ -487,24 +492,24 @@ private fun GradesSegment(snapshot: Snapshot) {
                 g?.creditsEarned?.let { InkText("${fmt(it)} credits earned", style = RisoType.small) }
             }
             // Two decimals, cut not rounded: 8.996 must not read as 9.00.
-            Overprint(g?.cgpa?.let { "%.2f".format(Locale.ENGLISH, Math.floor(it * 100) / 100) } ?: "–", heroSize, registerKey = g?.cgpa)
+            Overprint(g?.cgpa?.let { "%.2f".format(Locale.ENGLISH, floor(it * 100) / 100) } ?: "–", heroSize, registerKey = g?.cgpa)
         }
     }
     val nav = LocalNav.current
     Spacer(Modifier.height(12.dp))
     Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        InkCard(Modifier.weight(1f).fillMaxHeight().sharedCard(Route.SemesterGrades.sharedKey), onClick = { nav.go(Route.SemesterGrades) }, kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 4.dp) {
+        InkCard(Modifier.weight(1f).fillMaxHeight().sharedCard(Route.SemesterGrades.sharedKey), onClick = { nav.go(Route.SemesterGrades) }, kind = Kind.Exams, plateOffset = 4.dp) {
             InkText("Semester GPA", style = RisoType.title.copy(fontSize = 17.sp))
             InkText("Each term", style = RisoType.small)
         }
-        InkCard(Modifier.weight(1f).fillMaxHeight().sharedCard(Route.Curriculum.sharedKey), onClick = { nav.go(Route.Curriculum) }, kind = dev.medriid.davit.design.Kind.Classes, plateOffset = 4.dp) {
+        InkCard(Modifier.weight(1f).fillMaxHeight().sharedCard(Route.Curriculum.sharedKey), onClick = { nav.go(Route.Curriculum) }, kind = Kind.Classes, plateOffset = 4.dp) {
             InkText("Curriculum", style = RisoType.title.copy(fontSize = 17.sp))
             InkText("Syllabus PDFs", style = RisoType.small)
         }
     }
     if (g?.curriculum?.isNotEmpty() == true) {
         SectionTitle("Credits")
-        InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 3.dp) {
+        InkCard(Modifier.fillMaxWidth(), kind = Kind.Exams, plateOffset = 3.dp) {
             g.curriculum.forEachIndexed { i, d ->
                 if (i > 0) Spacer(Modifier.height(12.dp))
                 Row {
@@ -520,7 +525,7 @@ private fun GradesSegment(snapshot: Snapshot) {
     val byGrade = g?.entries.orEmpty().filter { it.grade != null && it.credits > 0 }.groupBy { it.grade!!.uppercase() }
     if (byGrade.isNotEmpty()) {
         SectionTitle("Credits by grade")
-        InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 3.dp) {
+        InkCard(Modifier.fillMaxWidth(), kind = Kind.Exams, plateOffset = 3.dp) {
             val most = byGrade.values.maxOf { l -> l.sumOf { it.credits } }
             (GradePoints.map { it.first } + byGrade.keys.filter { k -> GradePoints.none { it.first == k } }).forEach { grade ->
                 val credits = byGrade[grade]?.sumOf { it.credits } ?: return@forEach
@@ -543,7 +548,7 @@ private fun GradesSegment(snapshot: Snapshot) {
     }
     graded.groupBy { it.examMonth }.entries.reversed().forEach { (month, list) ->
         SectionTitle(month.ifBlank { "Courses" })
-        InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 3.dp) {
+        InkCard(Modifier.fillMaxWidth(), kind = Kind.Exams, plateOffset = 3.dp) {
             list.forEachIndexed { i, e ->
                 if (i > 0) Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -579,7 +584,7 @@ private fun PlannerCard(snapshot: Snapshot) {
     val heroSize = with(LocalDensity.current) { 44.dp.toSp() }
 
     SectionTitle("Plan this semester")
-    InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Exams) {
+    InkCard(Modifier.fillMaxWidth(), kind = Kind.Exams) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 InkText("CGPA if these hold", label = true)
@@ -596,7 +601,7 @@ private fun PlannerCard(snapshot: Snapshot) {
                 val left = courses.size - counted.size
                 if (left > 0) InkText("$left course${if (left == 1) "" else "s"} left out", style = RisoType.small.copy(fontWeight = FontWeight.SemiBold))
             }
-            Overprint(projected?.let { "%.2f".format(Locale.ENGLISH, Math.floor(it * 100) / 100) } ?: "–", heroSize)
+            Overprint(projected?.let { "%.2f".format(Locale.ENGLISH, floor(it * 100) / 100) } ?: "–", heroSize)
         }
         Spacer(Modifier.height(12.dp))
         Rule()
@@ -619,7 +624,7 @@ private fun PlannerCard(snapshot: Snapshot) {
 
 /** "12.3", "15", never "15.0". */
 private fun fmt(v: Double): String =
-    if (v == Math.floor(v)) v.toLong().toString() else "%.2f".format(Locale.ENGLISH, v).trimEnd('0').trimEnd('.')
+    if (v == floor(v)) v.toLong().toString() else "%.2f".format(Locale.ENGLISH, v).trimEnd('0').trimEnd('.')
 
 // ---- the segment bar ---------------------------------------------------------------
 

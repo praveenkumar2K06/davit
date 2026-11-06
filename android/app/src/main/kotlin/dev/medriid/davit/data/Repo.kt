@@ -30,6 +30,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.core.content.edit
 
 data class UiState(
     val signedIn: Boolean = false,
@@ -87,7 +88,7 @@ class Repo(private val context: Context) {
     private val prefs = context.getSharedPreferences("davit", Context.MODE_PRIVATE)
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val lock = Mutex()
-    private val client = VtopClient(BitmapDecoder, netLog = if (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) { s -> android.util.Log.i("daVIT-net", s) } else null)
+    private val client = VtopClient(BitmapDecoder, netLog = if (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) { s -> Log.i("daVIT-net", s) } else null)
 
     private val _state = MutableStateFlow(UiState())
 
@@ -188,9 +189,9 @@ class Repo(private val context: Context) {
                 _state.update { it.copy(busy = "Connecting to VTOP", error = null) }
                 try {
                     client.login(regNo, password, onProgress = ::showLoginProgress)
-                    prefs.edit()
-                        .putString(K_CREDS, Vault.encrypt(regNo.trim().uppercase() + "\n" + password))
-                        .apply()
+                    prefs.edit {
+                        putString(K_CREDS, Vault.encrypt(regNo.trim().uppercase() + "\n" + password))
+                        }
                     saveSession()
                     _state.update { it.copy(signedIn = true, regNo = regNo.trim().uppercase()) }
                     BackgroundSync.apply(context, _state.value.background)
@@ -209,7 +210,7 @@ class Repo(private val context: Context) {
 
     /** Pins [id]; choosing the current semester unpins, so next semester still takes over when it starts. */
     fun chooseSemester(id: String) {
-        prefs.edit().apply { if (id == prefs.getString(K_CUR_SEM, null)) remove(K_SEMESTER) else putString(K_SEMESTER, id) }.apply()
+        prefs.edit { if (id == prefs.getString(K_CUR_SEM, null)) remove(K_SEMESTER) else putString(K_SEMESTER, id) }
         sync()
     }
 
@@ -228,7 +229,7 @@ class Repo(private val context: Context) {
         if (currentStyle == style) return
 
         if (currentStyle == dev.medriid.davit.design.AppStyle.Classic) {
-            prefs.edit().putString(K_CLASSIC, now.toJson()).apply()
+            prefs.edit { putString(K_CLASSIC, now.toJson())}
         }
 
         if (style == dev.medriid.davit.design.AppStyle.Classic) {
@@ -258,18 +259,18 @@ class Repo(private val context: Context) {
     fun previewPalette(p: Palette) = _state.update { it.copy(palette = p) }
 
     fun setPalette(p: Palette) {
-        prefs.edit().putString(K_PALETTE, p.toJson()).putInt(K_INK, p.base).apply()
+        prefs.edit { putString(K_PALETTE, p.toJson()).putInt(K_INK, p.base)}
         _state.update { it.copy(palette = p) }
         DavitWidget.refresh(context)
     }
 
     fun setAppLock(on: Boolean) {
-        prefs.edit().putBoolean(K_LOCK, on).apply()
+        prefs.edit {putBoolean(K_LOCK, on)}
         _state.update { it.copy(appLock = on) }
     }
 
     fun setTheme(theme: Int) {
-        prefs.edit().putInt(K_THEME, theme).apply()
+        prefs.edit {putInt(K_THEME, theme)}
         _state.update { it.copy(theme = theme) }
         DavitWidget.refresh(context)
     }
@@ -284,7 +285,7 @@ class Repo(private val context: Context) {
     internal var demoClient: VtopClient? = null
 
     fun setMascot(code: String) {
-        prefs.edit().putString(K_MASCOT, code).apply()
+        prefs.edit {putString(K_MASCOT, code)}
         _state.update { it.copy(mascot = code) }
     }
 
@@ -299,7 +300,7 @@ class Repo(private val context: Context) {
     /** Your name for the course [code]; blank brings back VTOP's. */
     fun setAlias(code: String, name: String) {
         val next = (_state.value.aliases + (code to name.trim())).filterValues { it.isNotBlank() }
-        prefs.edit().putString(K_ALIASES, aliasesToJson(next)).apply()
+        prefs.edit { putString(K_ALIASES, aliasesToJson(next))}
         _state.update { it.copy(aliases = next) }
         DavitWidget.refresh(context)
         // This runs on every keystroke; the phone's calendar waits for the typing to stop.
@@ -311,19 +312,19 @@ class Repo(private val context: Context) {
     }
 
     fun setBanner(b: Banner) {
-        prefs.edit().putString(K_BANNER, b.toJson()).apply()
+        prefs.edit {putString(K_BANNER, b.toJson())}
         _state.update { it.copy(banner = b) }
     }
 
     /** Takes the picked image as the display card's background: scaled to at most 1600 px and saved as a JPEG. */
     suspend fun setBannerPhoto(uri: android.net.Uri): Boolean = withContext(Dispatchers.IO) {
         val ok = runCatching {
-            val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            context.contentResolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, bounds) }
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
             var sample = 1
             while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= 1600) sample *= 2
             val raw = context.contentResolver.openInputStream(uri)?.use {
-                android.graphics.BitmapFactory.decodeStream(it, null, android.graphics.BitmapFactory.Options().apply { inSampleSize = sample })
+                BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
             } ?: return@runCatching false
             val scaled = dev.medriid.davit.scan.Render.fit(raw, 1600)
             bannerPhoto.parentFile?.mkdirs()
@@ -402,7 +403,7 @@ class Repo(private val context: Context) {
 
     private fun updateSnapshot(change: (Snapshot) -> Snapshot) {
         _state.update { s -> s.copy(snapshot = s.snapshot?.let(change)) }
-        _state.value.snapshot?.let { prefs.edit().putString(K_CACHE, Vault.encrypt(it.toJson())).apply() }
+        _state.value.snapshot?.let { prefs.edit { putString(K_CACHE, Vault.encrypt(it.toJson()))} }
         DavitWidget.refresh(context)
     }
 
@@ -416,17 +417,17 @@ class Repo(private val context: Context) {
             val snap = s.snapshot ?: return@update s
             s.copy(snapshot = snap.copy(assignments = snap.assignments.map { if (it.classId == classId) it.copy(items = items) else it }))
         }
-        _state.value.snapshot?.let { prefs.edit().putString(K_CACHE, Vault.encrypt(it.toJson())).apply() }
+        _state.value.snapshot?.let { prefs.edit { putString(K_CACHE, Vault.encrypt(it.toJson()))} }
         DavitWidget.refresh(context)
     }
 
     /** The calendar's class group: [id] by hand, or null to go back to detecting it from attendance. */
     fun setCalendarGroup(id: String?) {
         val sem = _state.value.snapshot?.semester?.id ?: return
-        prefs.edit().apply {
+        prefs.edit {
             if (id == null) remove(K_CAL_MANUAL + sem) else putString(K_CAL_MANUAL + sem, id)
             remove(K_CAL_GROUP + sem)
-        }.apply()
+        }
         _state.update { s -> s.copy(snapshot = s.snapshot?.copy(calendarAt = 0)) }
         sync()
     }
@@ -444,7 +445,7 @@ class Repo(private val context: Context) {
         val now = _state.value.corrections
         val id = "$course|$date|$slot"
         val next = if (now.any { it.id == id }) now.filterNot { it.id == id } else now + Correction(course, date, slot, onDuty, System.currentTimeMillis())
-        prefs.edit().putString(K_CORRECTIONS, Vault.encrypt(correctionsToJson(next))).apply()
+        prefs.edit { putString(K_CORRECTIONS, Vault.encrypt(correctionsToJson(next)))}
         _state.update { it.copy(corrections = next) }
     }
 
@@ -461,12 +462,12 @@ class Repo(private val context: Context) {
     fun removeFriend(id: Long) = saveFriends(_state.value.friends.filterNot { it.id == id })
 
     private fun saveFriends(list: List<Friend>) {
-        prefs.edit().putString(K_FRIENDS, Vault.encrypt(friendsToJson(list))).apply()
+        prefs.edit { putString(K_FRIENDS, Vault.encrypt(friendsToJson(list)))}
         _state.update { it.copy(friends = list) }
     }
 
     fun setShareName(name: String) {
-        prefs.edit().putString(K_SHARE_NAME, Vault.encrypt(name)).apply()
+        prefs.edit { putString(K_SHARE_NAME, Vault.encrypt(name))}
         _state.update { it.copy(shareName = name) }
     }
 
@@ -481,12 +482,12 @@ class Repo(private val context: Context) {
     fun deleteSavedPlan(id: Long) = saveSavedPlans(_state.value.savedPlans.filterNot { it.id == id })
 
     private fun saveSavedPlans(list: List<SavedPlan>) {
-        prefs.edit().putString(K_SAVED_PLANS, Vault.encrypt(savedPlansToJson(list))).apply()
+        prefs.edit { putString(K_SAVED_PLANS, Vault.encrypt(savedPlansToJson(list)))}
         _state.update { it.copy(savedPlans = list) }
     }
 
     fun setSmart(s: SmartSetup) {
-        prefs.edit().putString(K_SMART, Vault.encrypt(smartToJson(s))).apply()
+        prefs.edit { putString(K_SMART, Vault.encrypt(smartToJson(s)))}
         _state.update { it.copy(smart = s) }
     }
 
@@ -498,47 +499,47 @@ class Repo(private val context: Context) {
         allocated[code] ?: allocationOptions(onVtop { c -> c.allocationClasses(code) }, code, title).also { allocated[code] = it }
 
     fun setPlan(semester: String, picks: List<PlanPick>) {
-        prefs.edit().putString(K_PLAN, Vault.encrypt(planToJson(semester, picks))).apply()
+        prefs.edit { putString(K_PLAN, Vault.encrypt(planToJson(semester, picks)))}
         _state.update { it.copy(plan = semester to picks) }
     }
 
     private fun saveReminders(list: List<Reminder>) {
         val sorted = list.sortedBy { it.date }
-        prefs.edit().putString(K_REMINDERS, Vault.encrypt(sorted.toJson())).apply()
+        prefs.edit { putString(K_REMINDERS, Vault.encrypt(sorted.toJson()))}
         _state.update { it.copy(reminders = sorted) }
         DavitWidget.refresh(context)
     }
 
     fun setBackground(on: Boolean) {
-        prefs.edit().putBoolean(K_BACKGROUND, on).apply()
+        prefs.edit {putBoolean(K_BACKGROUND, on)}
         _state.update { it.copy(background = on) }
         BackgroundSync.apply(context, on && _state.value.signedIn)
     }
 
     fun setAlertPrefs(p: AlertPrefs) {
-        prefs.edit().putString(K_ALERT_PREFS, p.toJson()).apply()
+        prefs.edit { putString(K_ALERT_PREFS, p.toJson())}
         _state.update { it.copy(alertPrefs = p) }
     }
 
     fun setAlerts(on: Boolean) {
-        prefs.edit().putBoolean(K_ALERTS, on).apply()
+        prefs.edit {putBoolean(K_ALERTS, on)}
         _state.update { it.copy(alerts = on) }
     }
 
     /** Whether the app has already asked for notification permission (it asks once). */
     var askedForNotifications: Boolean
         get() = prefs.getBoolean(K_ASKED, false)
-        set(v) = prefs.edit().putBoolean(K_ASKED, v).apply()
+        set(v) = prefs.edit {putBoolean(K_ASKED, v)}
 
     /** The welcome page (look and mascot) was seen once; after that, signing in goes straight to the form. */
     var welcomed: Boolean
         get() = prefs.getBoolean(K_WELCOMED, false)
-        set(v) = prefs.edit().putBoolean(K_WELCOMED, v).apply()
+        set(v) = prefs.edit {putBoolean(K_WELCOMED, v)}
 
     /** The setup after the first sync is done. Anyone who used daVIT before it existed counts as done. */
     var setupDone: Boolean
         get() = prefs.getBoolean(K_SETUP, askedForNotifications)
-        set(v) = prefs.edit().putBoolean(K_SETUP, v).apply()
+        set(v) = prefs.edit {putBoolean(K_SETUP, v)}
 
     /**
      * A sync for the background worker: waits for any sync already running, then runs one.
@@ -549,14 +550,15 @@ class Repo(private val context: Context) {
         val before = _state.value.snapshot
         val error = syncLocked(everything = false)
         val time = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("EEE h:mm a", java.util.Locale.ENGLISH))
-        val result = "$time · " + if (error == null) "ok" else message(error).substringBefore('.').lowercase()
-        prefs.edit().putString(K_LAST_BG, result).apply()
+        val result = "$time · " + if (error == null) "ok" else message(error).substringBefore('.')
+            .lowercase()
+        prefs.edit {putString(K_LAST_BG, result)}
         _state.update { it.copy(lastBackground = result) }
         Triple(before, _state.value.snapshot, error)
     }
 
     fun setDumpPages(on: Boolean) {
-        prefs.edit().putBoolean(K_DUMP, on).apply()
+        prefs.edit {putBoolean(K_DUMP, on)}
         if (!on) dumpDir().deleteRecursively()
         _state.update { it.copy(dumpPages = on) }
     }
@@ -576,9 +578,12 @@ class Repo(private val context: Context) {
                 val theme = prefs.getInt(K_THEME, 0)
                 val banner = prefs.getString(K_BANNER, null)
                 val classic = prefs.getString(K_CLASSIC, null)
-                prefs.edit().clear().putInt(K_INK, ink).putString(K_PALETTE, palette).putString(K_MASCOT, mascot).putInt(K_THEME, theme).putString(K_BANNER, banner)
-                    .putString(K_CLASSIC, classic)
-                    .putBoolean(K_WELCOMED, true).apply()
+                prefs.edit {
+                    clear().putInt(K_INK, ink).putString(K_PALETTE, palette)
+                        .putString(K_MASCOT, mascot).putInt(K_THEME, theme)
+                        .putString(K_BANNER, banner)
+                        .putString(K_CLASSIC, classic)
+                        .putBoolean(K_WELCOMED, true)}
                 Notifier.forget(context)
                 PhoneCalendar.turnOff(context)
                 dev.medriid.davit.sync.Reminders.cancelAll(context)
@@ -630,7 +635,7 @@ class Repo(private val context: Context) {
             val read = mutableMapOf<String, List<dev.medriid.davit.vtop.AttendanceRow>>()
             val current = semesters.firstOrNull { it.id == currentSemesterId() }
                 ?: currentSemester(semesters) { s -> withSession(creds) { client.attendance(s.id) }.also { read[s.id] = it } }
-                    .also { prefs.edit().putString(K_CUR_SEM, it.id).putLong(K_CUR_SEM_AT, System.currentTimeMillis()).apply() }
+                    .also { prefs.edit { putString(K_CUR_SEM, it.id).putLong(K_CUR_SEM_AT, System.currentTimeMillis())} }
             val pinned = prefs.getString(K_SEMESTER, null)
             if (pinned == current.id) prefs.edit().remove(K_SEMESTER).apply()
             val semester = semesters.firstOrNull { it.id == pinned } ?: current
@@ -760,7 +765,7 @@ class Repo(private val context: Context) {
 
             // The academic calendar from VTOP, for your class group (freshers' Saturdays differ),
             // every few days; if VTOP's fails, the last one read stays.
-            if (full.calendar?.semesterId != semester.id || full.calendar.group.isNullOrEmpty() || now - full.calendarAt > 3 * 24 * 3_600_000L) {
+            if (full.calendar?.semesterId != semester.id || full.calendar.group.isEmpty() || now - full.calendarAt > 3 * 24 * 3_600_000L) {
                 _state.update { it.copy(snapshot = full, busy = "Fetching calendar") }
                 val cal = section("Fetching calendar", "calendar", creds, full) { vtopCalendar(semester.id, full) }
                 cal?.let { full = full.copy(calendar = it, calendarAt = now) }
@@ -783,7 +788,7 @@ class Repo(private val context: Context) {
             // Since you last looked: new marks first, then attendance moves; else keep the last list.
             val changes = Snapshot.marksDiff(old?.marks, full.marks) + Snapshot.diff(old, attendance)
             full = full.copy(syncedAt = System.currentTimeMillis(), changes = changes.ifEmpty { old?.changes.orEmpty() })
-            prefs.edit().putString(K_CACHE, Vault.encrypt(full.toJson())).apply()
+            prefs.edit { putString(K_CACHE, Vault.encrypt(full.toJson()))}
             saveSession()
             Log.i(TAG, "sync ok: " + client.timings.joinToString { "${it.first}=${it.second}ms" })
             _state.update { it.copy(snapshot = full, busy = null, timings = client.timings.toList()) }
@@ -799,7 +804,7 @@ class Repo(private val context: Context) {
     }
 
     /** One optional section of the sync: shows [label], returns null if it failed for any reason but auth. */
-    private suspend fun <T> section(
+    private fun <T> section(
         label: String,
         dumpName: String,
         creds: Pair<String, String>,
@@ -818,7 +823,7 @@ class Repo(private val context: Context) {
     }
 
     /** Runs [block] on the saved session; if VTOP says it expired, signs in again once. */
-    private suspend fun <T> withSession(creds: Pair<String, String>, block: () -> T): T {
+    private fun <T> withSession(creds: Pair<String, String>, block: () -> T): T {
         if (client.session != null) {
             try {
                 return block()
@@ -863,7 +868,7 @@ class Repo(private val context: Context) {
             candidates.firstOrNull { id ->
                 val cal = AcademicCalendar.fromVtop(semesterId, names.getValue(id), client.calendar(semesterId, id, months))
                 evidence.all { (d, order) -> cal.timetableDay(d) == order }
-            }?.also { prefs.edit().putString(K_CAL_GROUP + semesterId, it).apply() }
+            }?.also { prefs.edit { putString(K_CAL_GROUP + semesterId, it)} }
         } ?: "ALL".takeIf { it in names } ?: groups.first().id
         val cells = client.calendar(semesterId, chosen)
         return if (cells.isEmpty()) null else AcademicCalendar.fromVtop(semesterId, names[chosen].orEmpty(), cells)
@@ -892,7 +897,12 @@ class Repo(private val context: Context) {
     }
 
     private fun saveSession() {
-        client.exportSession()?.let { prefs.edit().putString(K_SESSION, Vault.encrypt(it)).putLong(K_SESSION_AT, System.currentTimeMillis()).apply() }
+        client.exportSession()?.let { prefs.edit {
+            putString(K_SESSION, Vault.encrypt(it)).putLong(
+                K_SESSION_AT,
+                System.currentTimeMillis()
+            )
+        } }
     }
 
     private fun credentials(): Pair<String, String>? {

@@ -34,6 +34,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
+import androidx.core.net.toUri
 
 /** The next background sync after [now]: x:15 or x:45, none between 01:00 and 06:00. */
 internal fun nextSyncAt(now: LocalDateTime): LocalDateTime {
@@ -64,7 +65,8 @@ object BackgroundSync {
     /** Android's own "let this app run in the background" dialog, or its list if that's unavailable. */
     @SuppressLint("BatteryLife")
     fun askUnrestricted(context: Context) {
-        val direct = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + context.packageName))
+        val direct = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            ("package:" + context.packageName).toUri())
         val list = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
         val intent = if (direct.resolveActivity(context.packageManager) != null) direct else list
         context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

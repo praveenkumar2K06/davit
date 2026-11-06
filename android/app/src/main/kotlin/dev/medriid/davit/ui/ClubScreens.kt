@@ -197,10 +197,10 @@ private fun HomePageEvents(events: List<dev.medriid.davit.vtop.ClubEvent>) {
     val f = DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.ENGLISH)
     events.groupBy { it.date }.toSortedMap(compareBy(nullsLast()) { it }).forEach { (day, list) ->
         GroupLabel(
-            when {
-                day == null -> "Coming up"
-                day == today -> "Today"
-                day == today.plusDays(1) -> "Tomorrow"
+            when (day) {
+                null -> "Coming up"
+                today -> "Today"
+                today.plusDays(1) -> "Tomorrow"
                 else -> day.format(f)
             },
         )

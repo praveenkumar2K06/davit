@@ -39,7 +39,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -407,12 +406,11 @@ private fun MapScreen(scene: Scene, snapshot: Snapshot) {
         // the rest of the campus lies ahead of you, up the screen.
         val goodFix = meXY != null && onCampus && (me?.accuracy ?: 999f) <= 80f
         LaunchedEffect(goodFix) {
-            val m = meXY
-            if (!goodFix || m == null || cameToYou || touched || pick != null) return@LaunchedEffect
+            if (!goodFix || meXY == null || cameToYou || touched || pick != null) return@LaunchedEffect
             cameToYou = true
-            val b = scene.buildingAt(m[0], m[1])
-            val tx = b?.shape?.cx ?: m[0]
-            val ty = b?.shape?.cy ?: m[1]
+            val b = scene.buildingAt(meXY[0], meXY[1])
+            val tx = b?.shape?.cx ?: meXY[0]
+            val ty = b?.shape?.cy ?: meXY[1]
             val dx = heart.first - tx
             val dy = heart.second - ty
             val face = if (hypot(dx, dy) > 80f) atan2(dx, dy) else camera.rot
@@ -491,8 +489,7 @@ private fun MapScreen(scene: Scene, snapshot: Snapshot) {
 
         // Following the route: where you are on it, the next turn, and what's left.
         val progress = remember(routePts, meXY?.get(0), meXY?.get(1), navigating) {
-            val m = meXY
-            if (navigating && routePts != null && m != null) Guide.progress(routePts, m[0], m[1]) else null
+            if (navigating && routePts != null && meXY != null) Guide.progress(routePts, meXY[0], meXY[1]) else null
         }
         // The camera rides on you, close and tilted, turned the way you're heading: your own
         // bearing when you're moving, else the way the route goes from where you are.
@@ -530,8 +527,7 @@ private fun MapScreen(scene: Scene, snapshot: Snapshot) {
             flat = false
             touched = true
             haptics.heavy()
-            val m = meXY
-            if (m == null) {
+            if (meXY == null) {
                 if (!located) askLocation.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                 else if (!locationOn) turnOnLocation()
             }
@@ -773,7 +769,6 @@ private fun NextClass(scene: Scene, snapshot: Snapshot, onShow: (Pick) -> Unit) 
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PickCard(
     scene: Scene,
@@ -995,7 +990,7 @@ private fun SearchPanel(scene: Scene, me: Location?, onClose: () -> Unit, onPick
         }
     }
     val codes = remember(scene) { Places.codes(scene.map) }
-    val results by produceState(emptyList<Found>(), query) {
+    val results by produceState(emptyList(), query) {
         val q = query.trim()
         if (q.isEmpty()) {
             value = emptyList()

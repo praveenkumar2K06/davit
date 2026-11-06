@@ -48,8 +48,8 @@ fun PlanPick.clashesIn(plan: List<PlanPick>): List<PlanPick> =
     plan.filter { !(it.code == code && it.type == type) && firstOverlap(this, it) != null }
 
 private fun firstOverlap(a: PlanPick, b: PlanPick): Pair<Int, Int>? {
-    for (x in a.meetings) for (y in b.meetings) {
-        if (x.day == y.day && x.start < y.end && y.start < x.end) return x.day to maxOf(x.start, y.start)
+    for ((day1, start1, end1) in a.meetings) for ((day, start, end) in b.meetings) {
+        if (day1 == day && start1 < end && start < end1) return day1 to maxOf(start1, start)
     }
     return null
 }

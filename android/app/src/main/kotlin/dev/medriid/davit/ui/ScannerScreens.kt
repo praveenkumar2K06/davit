@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,13 +49,13 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -90,11 +91,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.verticalScroll
 import dev.medriid.davit.data.UploadState
 import dev.medriid.davit.data.UploadTarget
-import dev.medriid.davit.data.Uploads
 import dev.medriid.davit.data.sizeText
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkButton
@@ -126,6 +124,7 @@ import kotlin.coroutines.resume
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.graphics.createBitmap
 
 /**
  * The document scanner, over everything while it's open: camera (a burst of pages, or
@@ -230,7 +229,7 @@ private fun CameraScreen(s: ScanState, onDone: () -> Unit, onClose: () -> Unit) 
                     val future = ProcessCameraProvider.getInstance(context)
                     future.addListener({ cont.resume(future.get()) }, ContextCompat.getMainExecutor(context))
                 }
-                val p = Preview.Builder().build().also { it.setSurfaceProvider(preview.surfaceProvider) }
+                val p = Preview.Builder().build().also { it.surfaceProvider = preview.surfaceProvider }
                 val c = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .setJpegQuality(92)
@@ -431,7 +430,7 @@ private fun stack(parts: List<android.graphics.Bitmap>): android.graphics.Bitmap
     val w = parts.maxOf { it.width }
     val gap = w / 30
     val h = parts.sumOf { it.height * w / it.width } + gap * (parts.size + 1)
-    val out = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+    val out = createBitmap(w, h)
     val c = android.graphics.Canvas(out)
     c.drawColor(android.graphics.Color.WHITE)
     var y = gap

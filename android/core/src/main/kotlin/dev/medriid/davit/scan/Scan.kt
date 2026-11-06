@@ -128,7 +128,7 @@ object Scan {
         if (best < 0) return null
         val share = bestSize.toFloat() / (w * h)
         // A blob that is nearly the whole frame means the page fills it: nothing to cut.
-        if (share < 0.12f || share > 0.97f) return null
+        if (share !in 0.12f..0.97f) return null
 
         var tl = 0
         var tr = 0

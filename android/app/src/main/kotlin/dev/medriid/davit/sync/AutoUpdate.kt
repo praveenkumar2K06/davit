@@ -29,6 +29,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 /**
  * Keeps daVIT up to date: every three hours it asks GitHub for the latest release, downloads a
@@ -75,7 +77,7 @@ object AutoUpdate {
     }
 
     fun setEnabled(context: Context, on: Boolean) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(K_ON, on).apply()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean(K_ON, on) }
         schedule(context, on)
     }
 
@@ -112,7 +114,8 @@ object AutoUpdate {
     fun install(context: Context) {
         val r = _ready.value ?: return
         val intent = if (!context.packageManager.canRequestPackageInstalls()) {
-            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + context.packageName))
+            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                ("package:" + context.packageName).toUri())
         } else {
             installIntent(context, r)
         }

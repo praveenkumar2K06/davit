@@ -12,6 +12,7 @@ import dev.medriid.davit.data.AlertChannel
 import dev.medriid.davit.data.classReminders
 import java.time.LocalDateTime
 import java.time.ZoneId
+import androidx.core.content.edit
 
 /**
  * Before-class reminders, as alarms: the next day and a half of classes, set again after
@@ -46,7 +47,7 @@ object ClassAlarms {
                 am.setWindow(AlarmManager.RTC_WAKEUP, at - 5 * 60_000L, 5 * 60_000L, pi)
             }
         }
-        store.edit().putInt("count", due.size).apply()
+        store.edit { putInt("count", due.size) }
     }
 
     private fun pending(context: Context, index: Int, alert: Alert?): PendingIntent {

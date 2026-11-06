@@ -15,6 +15,7 @@ import kotlinx.serialization.builtins.serializer
 import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import androidx.core.content.edit
 
 /** One course page as last fetched. */
 @Serializable
@@ -85,7 +86,7 @@ fun searchMaterials(index: Fuzzy.Index<MaterialRow>, query: String, filter: Mate
  * Course pages: the list of materials per course (cached encrypted, so they show
  * offline), which of them are your own faculty's, downloads, and search across them all.
  */
-class MaterialsStore(private val context: Context, private val repo: Repo, val files: FileStore) {
+class MaterialsStore(context: Context, private val repo: Repo, val files: FileStore) {
     private val dir = File(context.filesDir, "course-pages").apply { mkdirs() }
 
     private val _pages = MutableStateFlow(loadAll())
@@ -177,12 +178,13 @@ class MaterialsStore(private val context: Context, private val repo: Repo, val f
         val q = query.trim()
         if (q.length < 2) return
         _recent.update { (listOf(q) + it.filterNot { r -> r.equals(q, ignoreCase = true) }).take(8) }
-        prefs.edit().putString(K_RECENT, Vault.encrypt(CacheJson.encodeToString(ListSerializer(String.serializer()), _recent.value))).apply()
+        prefs.edit { putString(K_RECENT,
+            Vault.encrypt(CacheJson.encodeToString(ListSerializer(String.serializer()), _recent.value)))}
     }
 
     fun forgetRecent() {
         _recent.value = emptyList()
-        prefs.edit().remove(K_RECENT).apply()
+        prefs.edit { remove(K_RECENT) }
     }
 
     /** Debug builds' demo seed only. */

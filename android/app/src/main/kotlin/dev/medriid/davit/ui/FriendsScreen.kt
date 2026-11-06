@@ -28,7 +28,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import dev.medriid.davit.data.SharedClass
 import dev.medriid.davit.data.WeekCode
 import dev.medriid.davit.data.clock
 import dev.medriid.davit.data.effectiveCalendar
@@ -96,7 +95,7 @@ internal fun FriendsScreen(route: Route) {
                 }
             }
             Spacer(Modifier.height(10.dp))
-            val people = linkedMapOf<String, List<SharedClass>>("You" to mine).apply { with.forEach { put(it.name, it.classes) } }
+            val people = linkedMapOf("You" to mine).apply { with.forEach { put(it.name, it.classes) } }
             val today = remember { LocalDate.now() }
             val todayOrder = s?.effectiveCalendar()?.timetableDay(today) ?: today.dayOfWeek.value
             teachingDays(people.values).forEachIndexed { i, day ->

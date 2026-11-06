@@ -244,7 +244,6 @@ private fun ClassFeedbackCard(cls: dev.medriid.davit.vtop.ClassFeedback, semeste
  * Paper seeing or re-evaluation: VTOP's choices (semester, service, regular or makeup), the
  * courses it offers for them, then a review that says plainly VTOP will raise a fee invoice.
  */
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 internal fun PaperSeeingScreen(route: Route) {
     val repo = LocalRepo.current
@@ -315,16 +314,16 @@ internal fun PaperSeeingScreen(route: Route) {
             InkText(page.message.ifBlank { "VTOP offers no courses for this." })
             return@RouteScreen
         }
-        androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)) {
             page.courses.forEach { c ->
                 val on = c.value in chosen
                 InkCard(Modifier.fillMaxWidth(), onClick = { if (on) chosen.remove(c.value) else chosen.add(c.value); reviewing = false }, kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 3.dp) {
                     androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
+                        Column(Modifier.weight(1f)) {
                             InkText(aliases.courseName(c.code, c.title).ifBlank { c.code.ifBlank { c.value } }, style = RisoType.body.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold), maxLines = 2)
                             InkText(c.details.filter { (h, v) -> v != c.title && !h.contains("Title", true) }.joinToString(" · ") { (h, v) -> if (h.contains("Code", true)) v else "${h.removePrefix("Course ")} $v" }, style = RisoType.small, maxLines = 3)
                         }
-                        androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(8.dp))
                         dev.medriid.davit.design.InkChip(if (on) "Picked" else "Pick", solid = on)
                     }
                 }

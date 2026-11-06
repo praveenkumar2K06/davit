@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -23,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,8 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.Section
-import dev.medriid.davit.data.courseName
 import dev.medriid.davit.data.courseIn
+import dev.medriid.davit.data.courseName
 import dev.medriid.davit.data.sessionGpas
 import dev.medriid.davit.data.sizeText
 import dev.medriid.davit.design.HalftoneBar
@@ -51,16 +49,14 @@ import dev.medriid.davit.design.printIn
 import dev.medriid.davit.design.rememberHaptics
 import dev.medriid.davit.vtop.Person
 import dev.medriid.davit.vtop.VtopMessage
-import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.floor
+import androidx.core.net.toUri
 
 /** One tile on the campus hub. */
 private data class Tile(val route: Route?, val title: String, val note: String, val kind: dev.medriid.davit.design.Kind, val open: (() -> Unit)? = null)
 
 /** Everything else VTOP shows, one tile each, in sections. Read only, except what you review and send yourself. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CampusHub(route: Route) {
     val repo = LocalRepo.current
@@ -280,7 +276,8 @@ internal fun PersonCard(p: Person, index: Int) {
             if (p.cabin.isNotBlank()) InkChip("Cabin ${p.cabin}")
             if (p.email.isNotBlank()) {
                 Box(Modifier.clickable(role = Role.Button) {
-                    runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + p.email)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                    runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO,
+                        ("mailto:" + p.email).toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                 }) { InkChip(p.email, solid = true) }
             }
         }
@@ -449,7 +446,6 @@ internal fun CurriculumScreen(route: Route) {
 // ---- semester GPA ------------------------------------------------------------------------
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
 internal fun SemesterGradesScreen(route: Route) {
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
@@ -473,7 +469,7 @@ internal fun SemesterGradesScreen(route: Route) {
                                 InkText("${fmtNum(s.credits)} graded credits", style = RisoType.small)
                             }
                             // Cut, not rounded: 8.996 must not read as 9.00.
-                            Overprint("%.2f".format(Locale.ENGLISH, Math.floor(s.gpa * 100) / 100), hero, registerKey = s.gpa)
+                            Overprint("%.2f".format(Locale.ENGLISH, floor(s.gpa * 100) / 100), hero, registerKey = s.gpa)
                         }
                     }
                 }
@@ -501,7 +497,7 @@ internal fun SemesterGradesScreen(route: Route) {
                 g.courses.isEmpty() && g.gpa == null -> InkText("VTOP has no results for that semester.", style = RisoType.small)
                 else -> InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Exams, plateOffset = 3.dp) {
                     g.gpa?.let {
-                        InkText("GPA ${"%.2f".format(Locale.ENGLISH, Math.floor(it * 100) / 100)}", style = RisoType.title)
+                        InkText("GPA ${"%.2f".format(Locale.ENGLISH, floor(it * 100) / 100)}", style = RisoType.title)
                         Spacer(Modifier.height(8.dp))
                     }
                     g.courses.forEachIndexed { i, e ->

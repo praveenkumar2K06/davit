@@ -110,7 +110,7 @@ class VtopClient(
             // An unreadable guess costs one small request for a new captcha, not a new page walk.
             var swaps = 0
             while (!solver.isConfident(text) && swaps < 3) {
-                val block = get("/get/new/captcha").use { it.body?.string().orEmpty() }
+                val block = get("/get/new/captcha").use { it.body.string().orEmpty() }
                 val uri = Parsers.captchaBlock(block) ?: break
                 page = page.copy(captchaDataUri = uri)
                 text = solveDataUri(uri)
@@ -161,7 +161,7 @@ class VtopClient(
     }
 
     private fun walkToLoginPage(): Parsers.LoginPage {
-        val open = get("/open/page").use { it.body?.string().orEmpty() }
+        val open = get("/open/page").use { it.body.string().orEmpty() }
         val csrf = Parsers.openPageCsrf(open) ?: throw UnexpectedPage("Couldn't read VTOP's start page.")
         val (html, _) = post("/prelogin/setup", mapOf("_csrf" to csrf, "flag" to "VTOP"), referer = "/open/page")
         return Parsers.loginPage(html)
@@ -598,7 +598,7 @@ class VtopClient(
             Request.Builder().url(url(path)).post(FormBody.Builder().apply { params.forEach { (k, v) -> add(k, v) } }.build())
         }
         call(builder.header("Referer", url("/content").toString()).build()).use { resp ->
-            val body = resp.body ?: throw UnexpectedPage("VTOP sent nothing back.")
+            val body = resp.body
             val type = body.contentType()?.let { "${it.type}/${it.subtype}" }.orEmpty()
             val disposition = resp.header("Content-Disposition")
             if (!resp.isSuccessful || (type == "text/html" && disposition?.contains("attachment", true) != true)) {
@@ -860,10 +860,10 @@ class VtopClient(
         page.copy(
             form = form.copy(
                 fields = form.fields.map { f ->
-                    when {
-                        f.name in fixed -> f.copy(value = fixed.getValue(f.name), readOnly = true)
+                    when (f.name) {
+                        in fixed -> f.copy(value = fixed.getValue(f.name), readOnly = true)
                         // VTOP's own page stops the description at 100 characters.
-                        f.name == "description" && f.maxLength == null -> f.copy(maxLength = 100)
+                        "description" if f.maxLength == null -> f.copy(maxLength = 100)
                         else -> f
                     }
                 },
@@ -959,7 +959,7 @@ class VtopClient(
             .apply { if (permit != null) tag(WritePermit::class.java, permit) }
             .build()
         return call(req, slow).use { resp ->
-            val html = resp.body?.string().orEmpty()
+            val html = resp.body.string().orEmpty()
             if (Parsers.isLoggedOutPage(html, resp.request.url.toString())) throw SessionExpired()
             Parsers.csrfOf(org.jsoup.Jsoup.parse(html))?.let { t -> session?.let { if (it.csrf != t) session = it.copy(csrf = t) } }
             lastPage = path to html
@@ -984,7 +984,7 @@ class VtopClient(
             // A page behind sign-in answers 404 once VTOP has ended the session (signing in on the
             // website ends the app's), not its sign-in page.
             if (signedIn && it.code == 404) throw SessionExpired()
-            (it.body?.string().orEmpty()) to it.request.url.toString()
+            (it.body.string().orEmpty()) to it.request.url.toString()
         }
     }
 

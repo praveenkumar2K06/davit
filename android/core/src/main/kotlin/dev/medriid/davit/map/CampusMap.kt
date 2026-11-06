@@ -170,7 +170,7 @@ object CampusMapParser {
             val ring = o["ring"]?.arr()?.let(::ring) ?: prpRings[id] ?: return@mapNotNull null
             PrpBlock(id, o.str("name"), o.str("letter"), o.str("color"), floors(o), ring)
         }
-        val menus = c.obj("mess")?.arr("items").orEmpty().mapNotNull { it as? JsonObject }.map {
+        val menus = c.obj("mess")?.arr("items").orEmpty().filterIsInstance<JsonObject>().map {
             Menu(it.str("hall"), it.str("day"), it.str("date"), it.str("meal"), it.str("menu"))
         }
         return CampusMap(

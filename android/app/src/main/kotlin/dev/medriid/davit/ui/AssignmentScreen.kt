@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
@@ -44,7 +43,6 @@ import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
-import dev.medriid.davit.design.InkChip
 import dev.medriid.davit.design.InkField
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks
@@ -62,6 +60,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import kotlin.math.floor
 
 /** The id an assignment is opened by: its VTOP code, or its row when VTOP gave none. */
 internal fun Assignment.routeCode(index: Int): String = code.ifEmpty { "#$index" }
@@ -382,4 +381,4 @@ internal fun readPicked(context: android.content.Context, uri: Uri, max: Int = U
 
 /** "12.3", "15", never "15.0". */
 internal fun fmtNum(v: Double): String =
-    if (v == Math.floor(v)) v.toLong().toString() else "%.2f".format(Locale.ENGLISH, v).trimEnd('0').trimEnd('.')
+    if (v == floor(v)) v.toLong().toString() else "%.2f".format(Locale.ENGLISH, v).trimEnd('0').trimEnd('.')

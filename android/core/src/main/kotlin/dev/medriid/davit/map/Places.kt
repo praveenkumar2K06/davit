@@ -56,9 +56,9 @@ object Places {
         val r = room.trim().uppercase()
         if (r.startsWith("G")) return "Ground floor"
         val digits = r.takeWhile(Char::isDigit)
-        val f = when {
-            digits.length == 3 -> digits.take(1).toInt()
-            digits.length == 4 -> digits.take(2).toInt()
+        val f = when (digits.length) {
+            3 -> digits.take(1).toInt()
+            4 -> digits.take(2).toInt()
             else -> return null
         }
         return when (f) {

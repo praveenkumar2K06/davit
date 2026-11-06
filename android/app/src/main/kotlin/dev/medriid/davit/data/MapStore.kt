@@ -73,7 +73,7 @@ class MapStore(private val context: Context, private val scope: CoroutineScope) 
             val texts = Files.map { name ->
                 http.newCall(Request.Builder().url("$BASE/$name.json").build()).execute().use { r ->
                     if (!r.isSuccessful) throw IllegalStateException("The map server said ${r.code}.")
-                    r.body?.string().orEmpty()
+                    r.body.string().orEmpty()
                 }
             }
             // Parse first: a broken download never replaces a good copy.

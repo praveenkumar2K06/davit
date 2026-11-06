@@ -1,12 +1,10 @@
 package dev.medriid.davit.ui
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +36,7 @@ import dev.medriid.davit.vtop.FacultyInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.core.net.toUri
 
 /** What VTOP's faculty search is sent for [query]: letters and single spaces, lower case. */
 internal fun facultyQuery(query: String): String =
@@ -47,7 +46,6 @@ internal fun facultyQuery(query: String): String =
  * Anyone VTOP lists, by name: VTOP's own Faculty Info search, run once you've typed three
  * letters and paused. Tap a name for their designation, cabin and email.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun VtopFacultySearch(query: String) {
     val repo = LocalRepo.current
@@ -75,7 +73,6 @@ internal fun VtopFacultySearch(query: String) {
 /** Details are fetched once, on the first tap. */
 private val facultyCards = mutableStateMapOf<String, FacultyInfo?>()
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FacultyHitCard(hit: FacultyHit) {
     val repo = LocalRepo.current
@@ -127,7 +124,8 @@ private fun FacultyHitCard(hit: FacultyHit) {
                     if (card.email.isNotBlank()) {
                         Box(Modifier.clickable(role = Role.Button) {
                             runCatching {
-                                context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + card.email)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                context.startActivity(Intent(Intent.ACTION_SENDTO,
+                                    ("mailto:" + card.email).toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                             }
                         }) { InkChip(card.email, solid = true) }
                     }

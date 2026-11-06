@@ -84,6 +84,7 @@ import dev.medriid.davit.widget.DavitWidgetReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.net.toUri
 
 /** The groups Settings opens onto, each its own short page. */
 internal enum class SettingsGroup(val id: String, val title: String, val icon: RisoIcon) {
@@ -180,7 +181,7 @@ internal fun SettingsScreen(route: Route) {
         val blocked = state.alerts && !Notifier.permitted(context)
         val saved by repo.files.saved.collectAsState()
         val currentStyleName = LocalInks.current.style.title
-        val isClassicStyle = LocalInks.current.style == dev.medriid.davit.design.AppStyle.Classic
+        val isClassicStyle = LocalInks.current.style == AppStyle.Classic
         SettingsGroup.entries.forEach { g ->
             val summary = when (g) {
                 SettingsGroup.Look -> listOfNotNull(
@@ -241,7 +242,10 @@ private fun rememberUpdateAction(): UpdateAction {
         val ready by AutoUpdate.ready.collectAsState()
         val r = ready
         if (r != null) {
-            return UpdateAction("Install", "Install ${r.version}", "${r.version} is downloaded. Install keeps your data and sign-in.", false, true) { AutoUpdate.install(context) }
+            return UpdateAction("Install", "Install ${r.version}", "${r.version} is downloaded. Install keeps your data and sign-in.",
+                busy = false,
+                ready = true
+            ) { AutoUpdate.install(context) }
         }
         return UpdateAction(if (checking) "Checking" else "Check", if (checking) "Checking…" else "Check for updates", update, checking, false) {
             if (!checking) {
@@ -261,8 +265,8 @@ private fun rememberUpdateAction(): UpdateAction {
     var release by remember { mutableStateOf<Updates.Release?>(null) }
     val rel = release
     if (rel != null) {
-        return UpdateAction("Get", "Get ${rel.version}", update, false, true) {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(rel.url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        return UpdateAction("Get", "Get ${rel.version}", update, busy = false, ready = true) {
+            context.startActivity(Intent(Intent.ACTION_VIEW, rel.url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
     return UpdateAction(if (checking) "Checking" else "Check", if (checking) "Checking…" else "Check for updates", update, checking, false) {
@@ -541,7 +545,8 @@ private fun AboutSettings() {
 
     // The people whose work this stands on.
     SettingsCard("Credits") {
-        val open = { url: String -> runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }; Unit }
+        val open = { url: String -> runCatching { context.startActivity(Intent(Intent.ACTION_VIEW,
+            url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }; Unit }
         SettingRow("Campus map by Jeman", "Shared under the MIT licence.", "Jeman") { open("https://www.linkedin.com/in/jemankalita/") }
         SettingRow("Faculty reviews by No8AM", "Student ratings and reviews, as of 1 November 2026.", "No8AM") { open("https://no8am.site/") }
         SettingRow("Map data", "© OpenStreetMap contributors, under the Open Database Licence.", "OSM") { open("https://www.openstreetmap.org/copyright") }

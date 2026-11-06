@@ -27,7 +27,7 @@ fun RisoTheme(inks: Inks = InkPairs.all.first(), content: @Composable () -> Unit
     RisoType.material = inks.material
 
     if (inks.material) {
-        val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
         val colorScheme = if (inks.dark) {
             if (dynamicColor) {
                 dynamicDarkColorScheme(LocalContext.current)

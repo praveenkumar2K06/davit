@@ -1,21 +1,10 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.design.EditorialShape
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.foundation.text.BasicTextField
-import dev.medriid.davit.data.key
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -35,6 +24,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +33,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -55,7 +47,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
@@ -63,6 +57,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -73,6 +69,7 @@ import dev.medriid.davit.data.atRisk
 import dev.medriid.davit.data.clock
 import dev.medriid.davit.data.hint
 import dev.medriid.davit.data.isLabType
+import dev.medriid.davit.data.key
 import dev.medriid.davit.data.overallPercent
 import dev.medriid.davit.data.percent
 import dev.medriid.davit.data.planFor
@@ -96,6 +93,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.IsoFields
 import java.util.Locale
+import kotlin.math.floor
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -457,7 +455,7 @@ internal fun EditorialAttendance(snapshot: Snapshot) {
     val nav = LocalNav.current
     val now = remember { LocalDateTime.now() }
     val rows = snapshot.attendance.sortedBy { it.percent }
-    var open by rememberSaveable { mutableStateOf<String?>(rows.firstOrNull { it.atRisk }?.key) }
+    var open by rememberSaveable { mutableStateOf(rows.firstOrNull { it.atRisk }?.key) }
     TabColumn {
         Reveal(0) { BasicText("Attendance", style = RisoType.display(44.sp).copy(color = inks.text)) }
         Spacer(Modifier.height(6.dp))
@@ -647,9 +645,9 @@ private fun MarksTicker(snapshot: Snapshot) {
 }
 
 /** 9.0 → "9", 4.5 → "4.5". */
-private fun num(v: Double?): String = when {
-    v == null -> "—"
-    v == Math.floor(v) -> v.toInt().toString()
+private fun num(v: Double?): String = when (v) {
+    null -> "—"
+    floor(v) -> v.toInt().toString()
     else -> "%.1f".format(Locale.ENGLISH, v)
 }
 

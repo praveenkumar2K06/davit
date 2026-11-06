@@ -11,13 +11,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,8 +35,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,12 +67,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.glance.text.Text
 import dev.medriid.davit.data.CachedCourse
-import dev.medriid.davit.data.courseName
 import dev.medriid.davit.data.FilterOption
 import dev.medriid.davit.data.MaterialFilter
 import dev.medriid.davit.data.MaterialResults
@@ -83,6 +77,7 @@ import dev.medriid.davit.data.MaterialRow
 import dev.medriid.davit.data.MaterialsStore
 import dev.medriid.davit.data.Section
 import dev.medriid.davit.data.Snapshot
+import dev.medriid.davit.data.courseName
 import dev.medriid.davit.data.searchMaterials
 import dev.medriid.davit.design.AppStyle
 import dev.medriid.davit.design.CardShape
@@ -610,7 +605,6 @@ private fun FilterSheet(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ModuleChips(options: List<FilterOption>, selected: String?, onPick: (String) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -739,7 +733,7 @@ private fun Chip(text: String, on: Boolean, onClick: () -> Unit) {
 }
 
 /** [text] with [ranges] marked in [ink] (as a translucent plate, so the text reads through it). */
-internal fun highlight(text: String, ranges: List<IntRange>, ink: androidx.compose.ui.graphics.Color): AnnotatedString = buildAnnotatedString {
+internal fun highlight(text: String, ranges: List<IntRange>, ink: Color): AnnotatedString = buildAnnotatedString {
     append(text)
     ranges.forEach { r ->
         val start = r.first.coerceIn(0, text.length)
