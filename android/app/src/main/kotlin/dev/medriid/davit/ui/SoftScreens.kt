@@ -211,8 +211,9 @@ internal fun SoftHome(snapshot: Snapshot, reminders: List<Reminder>, onOpen: (Ro
                 )
             }
             slot?.attendance?.let { row ->
+                val state by LocalRepo.current.state.collectAsState()
                 Spacer(Modifier.height(4.dp))
-                InkText("${row.percent}% · ${row.hint(snapshot.remainingFor(row, now))}", style = RisoType.small.copy(color = inks.text.copy(alpha = 0.7f)), maxLines = 2)
+                InkText("${row.percent}% · ${row.hint(snapshot.remainingFor(row, now, state.calcBeforeExam))}", style = RisoType.small.copy(color = inks.text.copy(alpha = 0.7f)), maxLines = 2)
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -251,6 +252,7 @@ internal fun SoftHome(snapshot: Snapshot, reminders: List<Reminder>, onOpen: (Ro
 internal fun SoftAttendance(snapshot: Snapshot) {
     val inks = LocalInks.current
     val nav = LocalNav.current
+    val state by LocalRepo.current.state.collectAsState()
     val now = remember { LocalDateTime.now() }
     val rows = snapshot.attendance.sortedBy { it.percent }
     TabColumn {
@@ -271,7 +273,7 @@ internal fun SoftAttendance(snapshot: Snapshot) {
         }
         StackedDeck(
             rows.mapIndexed { i, row ->
-                val remaining = snapshot.remainingFor(row, now)
+                val remaining = snapshot.remainingFor(row, now, state.calcBeforeExam)
                 DeckItem(
                     row.courseName + if (isLabType(row.classType)) " · Lab" else "",
                     "${row.attended}/${row.total} · ${row.hint(remaining)}",

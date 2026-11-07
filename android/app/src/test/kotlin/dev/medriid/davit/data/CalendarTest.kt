@@ -140,4 +140,46 @@ class CalendarTest {
         assertEquals("ASHA RAMAN", facultyKey("Dr. Asha  Raman"))
         assertEquals("ASHA RAMAN", facultyKey("ASHA RAMAN"))
     }
+
+    @Test
+    fun remainingForCalculatesTillNextExamWindow() {
+        // Mon 7 Sep to Fri 11 Sep instructional, Mon 14–Wed 16 Sep CAT-1, Thu 17–Fri 18 Sep instructional, Mon 21 Sep FAT.
+        val days = (7..11).map { d -> CalDay(LocalDate.of(2026, 9, d), "Instructional", d - 6, null) } +
+            (14..16).map { d -> CalDay(LocalDate.of(2026, 9, d), "CAT-1", 0, null) } +
+            listOf(
+                CalDay(LocalDate.of(2026, 9, 17), "Instructional", 4, null),
+                CalDay(LocalDate.of(2026, 9, 18), "Instructional", 5, null),
+                CalDay(LocalDate.of(2026, 9, 21), "FAT", 0, null),
+            )
+        val calWithCat = AcademicCalendar("VL1", LocalDate.of(2026, 9, 7), LocalDate.of(2026, 9, 20), LocalDate.of(2026, 9, 20), days)
+        val row = AttendanceRow("BACHY105", "Applied Chemistry", "Theory", 30, 40, null, "VL1")
+        val sem = dev.medriid.davit.vtop.Semester("VL1", "Fall 2026")
+        val snapshot = Snapshot(sem, listOf(sem), listOf(row), listOf(course), 0, emptyList(), calendar = calWithCat)
+
+        fun testSlot(day: Int, start: Int) = ClassSlot(course, Meeting(day, start, start + 50, "A1"), row)
+        val testWeek = mapOf(1 to listOf(testSlot(1, 480)), 2 to listOf(testSlot(2, 540)), 5 to listOf(testSlot(5, 600)))
+        val meetings = snapshot.meetingsFor(row, testWeek)
+
+        // Mon 7 Sep 07:00 (before CAT-1): Mon, Tue, Fri = 3 classes left till CAT-1 starts on Mon 14 Sep.
+        val beforeCat = LocalDateTime.of(2026, 9, 7, 7, 0)
+        val endBefore = calWithCat.endFor(false, beforeCat.toLocalDate())!!
+        var countBefore = 0
+        var d = beforeCat.toLocalDate()
+        while (!d.isAfter(endBefore)) {
+            countBefore += countOn(meetings, calWithCat, d, beforeCat)
+            d = d.plusDays(1)
+        }
+        assertEquals(3, countBefore)
+
+        // Thu 17 Sep 07:00 (after CAT-1, before FAT): Thu (no class), Fri 18 Sep (1 class) = 1 class left till FAT.
+        val afterCat = LocalDateTime.of(2026, 9, 17, 7, 0)
+        val endAfter = calWithCat.endFor(false, afterCat.toLocalDate())!!
+        var countAfter = 0
+        d = afterCat.toLocalDate()
+        while (!d.isAfter(endAfter)) {
+            countAfter += countOn(meetings, calWithCat, d, afterCat)
+            d = d.plusDays(1)
+        }
+        assertEquals(1, countAfter)
+    }
 }

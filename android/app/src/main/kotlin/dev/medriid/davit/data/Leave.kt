@@ -49,7 +49,7 @@ fun Snapshot.afterLeave(dates: Set<LocalDate>, at: LocalDateTime): List<LeaveImp
     val last = chosen.maxOrNull()
     return attendance.map { row ->
         val meetings = meetingsFor(row, week)
-        val end = cal?.endFor(isLabType(row.classType))
+        val end = cal?.endFor(isLabType(row.classType), today)
         fun counted(d: LocalDate) = if (end != null && d.isAfter(end)) 0 else countOn(meetings, cal, d, at)
         val missed = chosen.sumOf(::counted)
         var between = 0

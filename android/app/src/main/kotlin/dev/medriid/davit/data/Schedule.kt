@@ -192,14 +192,15 @@ fun Snapshot.effectiveCalendar(): AcademicCalendar? {
 }
 
 /**
- * Classes of [row]'s course still to come this semester, from [at] to the last theory
- * (or lab) day. Null without a calendar, since the end date is unknown.
+ * Classes of [row]'s course still to come before the next exam (or end of semester),
+ * from [at] to the start of the next exam day (or last theory/lab day).
+ * Null without a calendar, since the end date is unknown.
  */
-fun Snapshot.remainingFor(row: AttendanceRow, at: LocalDateTime): Int? {
+fun Snapshot.remainingFor(row: AttendanceRow, at: LocalDateTime, calcBeforeExam: Boolean = true): Int? {
     val cal = effectiveCalendar() ?: return null
     val meetings = meetingsFor(row)
     if (meetings.isEmpty()) return null
-    val end = cal.endFor(isLabType(row.classType)) ?: return null
+    val end = cal.endFor(isLabType(row.classType), if (calcBeforeExam) at.toLocalDate() else null) ?: return null
     var count = 0
     var d = at.toLocalDate()
     while (!d.isAfter(end)) {
@@ -213,8 +214,17 @@ fun Snapshot.remainingFor(row: AttendanceRow, at: LocalDateTime): Int? {
 fun Snapshot.meetingsFor(row: AttendanceRow, week: Map<Int, List<ClassSlot>> = weekOf(this)): List<Meeting> =
     week.values.flatten().filter { it.attendance?.key == row.key }.map { it.meeting }
 
-/** The last teaching day for labs, or for theory. */
-fun AcademicCalendar.endFor(lab: Boolean): LocalDate? = if (lab) lastLab else lastTheory
+/** The last teaching day for labs or theory before the next exam (if one starts sooner), or for the full semester. */
+fun AcademicCalendar.endFor(lab: Boolean, from: LocalDate? = null): LocalDate? {
+    val semesterEnd = if (lab) lastLab else lastTheory
+    if (from == null) return semesterEnd
+    val nextExamStart = examWindows().firstOrNull { !it.second.isBefore(from) }?.second
+    return if (nextExamStart != null && (semesterEnd == null || nextExamStart.isBefore(semesterEnd))) {
+        nextExamStart
+    } else {
+        semesterEnd
+    }
+}
 
 /**
  * How many of [meetings] are held on [d]: by the calendar's day order (none on a holiday

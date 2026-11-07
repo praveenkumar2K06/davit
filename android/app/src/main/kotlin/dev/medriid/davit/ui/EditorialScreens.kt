@@ -453,6 +453,7 @@ private fun NameRow(n: Int, code: String, vtop: String, saved: String, onName: (
 internal fun EditorialAttendance(snapshot: Snapshot) {
     val inks = LocalInks.current
     val nav = LocalNav.current
+    val state by LocalRepo.current.state.collectAsState()
     val now = remember { LocalDateTime.now() }
     val rows = snapshot.attendance.sortedBy { it.percent }
     var open by rememberSaveable { mutableStateOf(rows.firstOrNull { it.atRisk }?.key) }
@@ -498,7 +499,7 @@ internal fun EditorialAttendance(snapshot: Snapshot) {
                         Column(Modifier.padding(start = 34.dp)) {
                             HalftoneBar(row.attended / row.total.coerceAtLeast(1).toFloat(), threshold = 0.75f, atRisk = risky)
                             Spacer(Modifier.height(10.dp))
-                            InkText(row.hint(snapshot.remainingFor(row, now)).replaceFirstChar { it.uppercase() } + ".", style = RisoType.body.copy(fontWeight = FontWeight.Bold))
+                            InkText(row.hint(snapshot.remainingFor(row, now, state.calcBeforeExam)).replaceFirstChar { it.uppercase() } + ".", style = RisoType.body.copy(fontWeight = FontWeight.Bold))
                             snapshot.feeds.remarkFor(row)?.let {
                                 Spacer(Modifier.height(6.dp))
                                 InkText("VTOP: ${it.remark}", style = RisoType.small.copy(color = if (it.serious) inks.a else inks.muted, fontWeight = FontWeight.Bold))

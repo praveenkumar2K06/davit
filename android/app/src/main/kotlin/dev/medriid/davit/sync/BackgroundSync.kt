@@ -1,20 +1,16 @@
 package dev.medriid.davit.sync
 
-import dev.medriid.davit.data.key
-import dev.medriid.davit.data.fixedBetween
-import dev.medriid.davit.data.withLabSessions
-import dev.medriid.davit.data.withAliases
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -27,6 +23,10 @@ import dev.medriid.davit.DavitApp
 import dev.medriid.davit.data.Alert
 import dev.medriid.davit.data.AlertChannel
 import dev.medriid.davit.data.alertsFor
+import dev.medriid.davit.data.fixedBetween
+import dev.medriid.davit.data.key
+import dev.medriid.davit.data.withAliases
+import dev.medriid.davit.data.withLabSessions
 import dev.medriid.davit.vtop.BadCredentials
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -34,7 +34,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
-import androidx.core.net.toUri
 
 /** The next background sync after [now]: x:15 or x:45, none between 01:00 and 06:00. */
 internal fun nextSyncAt(now: LocalDateTime): LocalDateTime {

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -102,11 +103,13 @@ internal fun AttendanceTab(snapshot: Snapshot) {
         if (rows.isEmpty()) {
             InkText("VTOP has no attendance for ${snapshot.semester.name} yet.")
         }
+        val repo = LocalRepo.current
+        val state by repo.state.collectAsState()
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             rows.sortedBy { it.percent }.forEachIndexed { index, row ->
                 val faculty = snapshot.timetable.firstOrNull { it.classId.isNotEmpty() && it.classId == row.classId }?.faculty
                     ?: snapshot.timetable.firstOrNull { it.courseCode == row.courseCode && isLabType(it.courseType) == isLabType(row.classType) }?.faculty
-                val remaining = remember(snapshot, row.key) { snapshot.remainingFor(row, LocalDateTime.now()) }
+                val remaining = remember(snapshot, row.key, state.calcBeforeExam) { snapshot.remainingFor(row, LocalDateTime.now(), state.calcBeforeExam) }
                 key(row.key) { CourseCard(row, remaining, snapshot.history[row.key].orEmpty(), faculty.orEmpty(), snapshot.feeds.remarkFor(row), Modifier.printIn(index)) }
             }
         }
