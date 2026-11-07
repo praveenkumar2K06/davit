@@ -27,6 +27,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.design.AppStyle
+import dev.medriid.davit.design.ChoiceRow
+import dev.medriid.davit.design.DatePickerModal
+import dev.medriid.davit.design.TimePickerModal
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
@@ -397,15 +401,48 @@ private fun LeaveApplication() {
 /** A date and time, each opening the system picker. */
 @Composable
 private fun WhenRow(label: String, at: LocalDateTime, onPick: (LocalDateTime) -> Unit) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val inks = LocalInks.current
     val context = LocalContext.current
     Row(verticalAlignment = Alignment.CenterVertically) {
         InkText(label, label = true, modifier = Modifier.width(70.dp))
         Box(Modifier.clickable(role = Role.Button) {
-            DatePickerDialog(context, { _, y, m, d -> onPick(at.withYear(y).withMonth(m + 1).withDayOfMonth(d)) }, at.year, at.monthValue - 1, at.dayOfMonth).show()
+            if (inks.style == AppStyle.Material3) {
+                showDatePicker = true
+            } else {
+                DatePickerDialog(context, { _, y, m, d -> onPick(at.withYear(y).withMonth(m + 1).withDayOfMonth(d)) }, at.year, at.monthValue - 1, at.dayOfMonth).show()
+            }
         }.padding(end = 8.dp)) { InkChip(at.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)), solid = true) }
         Box(Modifier.clickable(role = Role.Button) {
-            TimePickerDialog(context, { _, hh, mm -> onPick(at.withHour(hh).withMinute(mm)) }, at.hour, at.minute, false).show()
+            if (inks.style == AppStyle.Material3) {
+                showTimePicker = true
+            } else {
+                TimePickerDialog(context, { _, hh, mm -> onPick(at.withHour(hh).withMinute(mm)) }, at.hour, at.minute, false).show()
+            }
         }) { InkChip(at.format(DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH))) }
+    }
+
+    if (showDatePicker) {
+        DatePickerModal(
+            initialDate = at.toLocalDate(),
+            onDateSelected = { d ->
+                onPick(at.withYear(d.year).withMonth(d.monthValue).withDayOfMonth(d.dayOfMonth))
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
+
+    if (showTimePicker) {
+        TimePickerModal(
+            initialTime = at.toLocalTime(),
+            onTimeSelected = { t ->
+                onPick(at.withHour(t.hour).withMinute(t.minute))
+                showTimePicker = false
+            },
+            onDismiss = { showTimePicker = false }
+        )
     }
 }
 

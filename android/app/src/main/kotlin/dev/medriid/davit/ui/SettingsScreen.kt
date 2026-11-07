@@ -38,7 +38,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -67,6 +71,7 @@ import dev.medriid.davit.data.Updates
 import dev.medriid.davit.data.courseKey
 import dev.medriid.davit.data.percent
 import dev.medriid.davit.design.CardShape
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.IconGlyph
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
@@ -92,6 +97,7 @@ internal enum class SettingsGroup(val id: String, val title: String, val icon: R
     Yours("yours", "Make it yours", RisoIcon.Profile),
     Alerts("alerts", "Notifications", RisoIcon.Bell),
     Sync("sync", "Sync and semester", RisoIcon.Today),
+    Flags("flags", "Flags", RisoIcon.Flag),
     Phone("phone", "On this phone", RisoIcon.Download),
     About("about", "About and help", RisoIcon.Book),
 }
@@ -111,7 +117,9 @@ private val SettingsIndex: List<Triple<String, String, SettingsGroup>> = listOf(
     Triple("Meal reminders", "mess menu food breakfast lunch snacks dinner", SettingsGroup.Alerts),
     Triple("New marks, deadlines, exams, registration", "alerts marks deadline exam registration remarks", SettingsGroup.Alerts),
     Triple("Sync now", "refresh update data", SettingsGroup.Sync),
+    Triple("Sync on app open", "open launch refresh auto sync", SettingsGroup.Sync),
     Triple("Sync in the background", "background refresh battery", SettingsGroup.Sync),
+    Triple("Calculate before exam", "calculate attendance exam remaining classes flag flags", SettingsGroup.Flags),
     Triple("Let daVIT run in the background", "battery optimisation unrestricted", SettingsGroup.Sync),
     Triple("Semester", "term", SettingsGroup.Sync),
     Triple("Calendar class group", "freshers group saturday", SettingsGroup.Sync),
@@ -196,9 +204,11 @@ internal fun SettingsScreen(route: Route) {
                     else -> alertSummary(state.alertPrefs)
                 }
                 SettingsGroup.Sync -> listOfNotNull(
+                    if (!state.syncOnOpen) "Sync on open off" else null,
                     if (state.background) "Every 30 minutes" else "Background sync off",
                     snapshot?.semester?.name?.substringBefore(" - "),
                 ).joinToString(" · ")
+                SettingsGroup.Flags -> if (state.calcBeforeExam) "Calculate before exam on" else "Calculate before exam off"
                 SettingsGroup.Phone -> listOfNotNull(
                     if (state.appLock) "App lock on" else null,
                     if (saved.isEmpty()) "no downloads" else "${saved.size} download${if (saved.size == 1) "" else "s"}",
@@ -297,6 +307,24 @@ private fun open(nav: Nav, g: SettingsGroup) = nav.go(if (g == SettingsGroup.Ale
 @Composable
 private fun GroupRow(g: SettingsGroup, summary: String, onClick: () -> Unit) {
     val inks = LocalInks.current
+    if(inks.style == AppStyle.Material3) {
+        SegmentedListItem(
+            colors = ListItemDefaults.segmentedColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shapes = ListItemDefaults.segmentedShapes(index = g.ordinal, count = SettingsGroup.entries.size),
+            leadingContent = { IconGlyph(g.icon, inks.text, Modifier.size(22.dp)) },
+            content = { InkText(g.title, style = RisoType.body.copy(fontWeight = FontWeight.SemiBold)) },
+            supportingContent = { InkText(summary.replaceFirstChar { it.uppercase() }, style = RisoType.small, maxLines = 2) },
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 2.dp)
+                .semantics { contentDescription = "${g.title}: $summary" }
+        )
+        return
+    }
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -327,9 +355,23 @@ internal fun SettingsPageScreen(route: Route.SettingsPage) {
             SettingsGroup.Yours -> YoursSettings()
             SettingsGroup.Alerts -> {}
             SettingsGroup.Sync -> SyncSettings()
+            SettingsGroup.Flags -> FlagsSettings()
             SettingsGroup.Phone -> PhoneSettings()
             SettingsGroup.About -> AboutSettings()
         }
+    }
+}
+
+@Composable
+private fun FlagsSettings() {
+    val repo = LocalRepo.current
+    val state by repo.state.collectAsState()
+    SettingsCard("Attendance") {
+        ToggleRow(
+            "Calculate before exam",
+            "Calculate remaining classes until the start of the next exam period instead of the end of the semester.",
+            state.calcBeforeExam,
+        ) { repo.setCalcBeforeExam(!state.calcBeforeExam) }
     }
 }
 
@@ -421,6 +463,11 @@ private fun SyncSettings() {
             }
         }
         Hairline()
+        ToggleRow(
+            "Sync on app open",
+            "Automatically refresh data when opening the app if older than 15 minutes.",
+            state.syncOnOpen,
+        ) { repo.setSyncOnOpen(!state.syncOnOpen) }
         ToggleRow(
             "Sync in the background",
             "At :15 and :45 while the app is closed, never between 1 and 6 am." + (state.lastBackground?.let { " Last: $it." } ?: ""),

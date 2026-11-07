@@ -53,6 +53,7 @@ import dev.medriid.davit.data.isLabType
 import dev.medriid.davit.data.neededAverage
 import dev.medriid.davit.data.projectCgpa
 import dev.medriid.davit.data.vtopDate
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.IconGlyph

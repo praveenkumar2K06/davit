@@ -16,10 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,6 +46,8 @@ import dev.medriid.davit.data.planFor
 import dev.medriid.davit.data.remainingFor
 import dev.medriid.davit.data.weekOf
 import dev.medriid.davit.design.AppStyle
+import dev.medriid.davit.design.ChoiceRow
+import dev.medriid.davit.design.DatePickerModal
 import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.IconGlyph
@@ -64,10 +64,8 @@ import dev.medriid.davit.design.TiltedCard
 import dev.medriid.davit.design.printIn
 import kotlinx.coroutines.delay
 import java.time.DayOfWeek
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -106,6 +104,7 @@ internal fun TodayTab(
             now = LocalDateTime.now()
         }
     }
+    val state by LocalRepo.current.state.collectAsState()
     val week = remember(snapshot) { weekOf(snapshot) }
     val plan = planFor(week, now, snapshot.calendar)
     val calDay = plan.calendarDay
@@ -162,7 +161,7 @@ internal fun TodayTab(
                     val slot = plan.today[picked]
                     PickedClass(
                         slot, now, slot == plan.next && plan.nextInDays == 0,
-                        slot.attendance?.let { snapshot.remainingFor(it, now) },
+                        slot.attendance?.let { snapshot.remainingFor(it, now, state.calcBeforeExam) },
                         if (slot == plan.now) onOpenAttendance else onOpenWeek,
                     )
                 }
@@ -170,7 +169,7 @@ internal fun TodayTab(
             // Nothing left today: the next class on a later day.
             plan.next?.takeIf { plan.nextInDays > 0 }?.let {
                 if (plan.today.isNotEmpty()) Rule(Modifier.padding(vertical = 8.dp)) else Spacer(Modifier.height(10.dp))
-                NextClass(it, plan, it.attendance?.let { a -> snapshot.remainingFor(a, now) }, showEnd = plan.today.isEmpty(), onOpenWeek)
+                NextClass(it, plan, it.attendance?.let { a -> snapshot.remainingFor(a, now, state.calcBeforeExam) }, showEnd = plan.today.isEmpty(), onOpenWeek)
             }
             if (snapshot.timetable.isEmpty()) {
                 InkText("No timetable for ${snapshot.semester.name} yet, so no Now/Next.", style = RisoType.small, modifier = Modifier.padding(top = 8.dp))
@@ -541,46 +540,11 @@ private fun AddReminder(onSave: (String, LocalDate) -> Unit) {
     if (showDatePicker) {
         DatePickerModal(
             initialDate = date,
-            onDateSelected = { millis ->
-                if (millis != null) {
-                    date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
-                }
+            onDateSelected = { pickedDate ->
+                date = pickedDate
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false }
         )
-    }
-}
-
-@Composable
-fun DatePickerModal(
-    initialDate: LocalDate? = null,
-    onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val initialMillis = remember(initialDate) {
-        initialDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
-    }
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialMillis
-    )
-
-    androidx.compose.material3.DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                onDateSelected(datePickerState.selectedDateMillis)
-                onDismiss()
-            }) {
-                Text("OK")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    ) {
-        androidx.compose.material3.DatePicker(state = datePickerState)
     }
 }

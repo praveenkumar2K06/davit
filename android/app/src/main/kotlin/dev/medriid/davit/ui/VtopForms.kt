@@ -24,6 +24,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.design.AppStyle
+import dev.medriid.davit.design.ChoiceRow
+import dev.medriid.davit.design.DatePickerModal
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
@@ -32,6 +35,7 @@ import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
+import dev.medriid.davit.design.TimePickerModal
 import dev.medriid.davit.vtop.FormField
 import dev.medriid.davit.vtop.Reply
 import java.time.LocalDate
@@ -137,22 +141,56 @@ private fun LongChoice(f: FormField, value: String, onPick: (String) -> Unit) {
 /** A date or a time, opening the system picker; the value goes in the format VTOP's input uses. */
 @Composable
 private fun WhenField(f: FormField, value: String, onPick: (String) -> Unit) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val inks = LocalInks.current
     val context = LocalContext.current
+    val iso = f.kind == FormField.Kind.Date
+    val d = runCatching { if (iso) LocalDate.parse(value) else LocalDate.parse(value, vtopDay) }.getOrDefault(LocalDate.now())
     Row(verticalAlignment = Alignment.CenterVertically) {
         InkText(f.title, label = true, modifier = Modifier.weight(1f))
         Box(Modifier.clickable(role = Role.Button, enabled = !f.readOnly) {
             if (f.kind == FormField.Kind.Time) {
-                val t = runCatching { LocalTime.parse(value) }.getOrDefault(LocalTime.of(21, 0))
-                TimePickerDialog(context, { _, h, m -> onPick(LocalTime.of(h, m).format(DateTimeFormatter.ofPattern("HH:mm"))) }, t.hour, t.minute, false).show()
+                if (inks.style == AppStyle.Material3) {
+                    showTimePicker = true
+                } else {
+                    val t = runCatching { LocalTime.parse(value) }.getOrDefault(LocalTime.of(21, 0))
+                    TimePickerDialog(context, { _, h, m -> onPick(LocalTime.of(h, m).format(DateTimeFormatter.ofPattern("HH:mm"))) }, t.hour, t.minute, false).show()
+                }
             } else {
-                val iso = f.kind == FormField.Kind.Date
-                val d = runCatching { if (iso) LocalDate.parse(value) else LocalDate.parse(value, vtopDay) }.getOrDefault(LocalDate.now())
-                DatePickerDialog(context, { _, y, m, day ->
-                    val picked = LocalDate.of(y, m + 1, day)
-                    onPick(if (iso) picked.toString() else picked.format(vtopDay))
-                }, d.year, d.monthValue - 1, d.dayOfMonth).show()
+                if (inks.style == AppStyle.Material3) {
+                    showDatePicker = true
+                } else {
+                    DatePickerDialog(context, { _, y, m, day ->
+                        val picked = LocalDate.of(y, m + 1, day)
+                        onPick(if (iso) picked.toString() else picked.format(vtopDay))
+                    }, d.year, d.monthValue - 1, d.dayOfMonth).show()
+                }
             }
         }) { InkChip(if (value.isBlank()) "Pick" else f.shown(value), solid = value.isNotBlank()) }
+    }
+
+    if (showDatePicker) {
+        DatePickerModal(
+            initialDate = d,
+            onDateSelected = { date ->
+                onPick(if (iso) date.toString() else date.format(vtopDay))
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
+
+    if (showTimePicker) {
+        val t = runCatching { LocalTime.parse(value) }.getOrDefault(LocalTime.of(21, 0))
+        TimePickerModal(
+            initialTime = t,
+            onTimeSelected = { time ->
+                onPick(time.format(DateTimeFormatter.ofPattern("HH:mm")))
+                showTimePicker = false
+            },
+            onDismiss = { showTimePicker = false }
+        )
     }
 }
 

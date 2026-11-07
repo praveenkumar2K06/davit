@@ -4,9 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -15,11 +13,6 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,8 +34,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import dev.medriid.davit.design.InkChip
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.Inks
@@ -303,54 +295,4 @@ fun MascotEditor(mascot: Mascot, onChange: (Mascot) -> Unit) {
     InkText("Extra", label = true)
     Spacer(Modifier.height(4.dp))
     ChoiceRow(mascot.extraNames, mascot.extra) { onChange(mascot.copy(extra = it)) }
-}
-
-/** Chips where the chosen one is solid; wraps onto more lines when it runs out of room. */
-@Composable
-internal fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
-    val inks = LocalInks.current
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        options.forEachIndexed { i, text ->
-            if (inks.material) {
-                val isSelected = i == selected
-                val labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onSelect(i) },
-                    label = {
-                        BasicText(
-                            text,
-                            maxLines = 1,
-                            softWrap = false,
-                            style = dev.medriid.davit.design.RisoType.label.copy(
-                                color = labelColor,
-                                fontSize = 12.sp,
-                            ),
-                        )
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = inks.a,
-                        selectedLabelColor = labelColor,
-                        containerColor = Color.Transparent,
-                        labelColor = labelColor,
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        enabled = true,
-                        selected = isSelected,
-                        borderColor = inks.rule,
-                        selectedBorderColor = inks.a,
-                        borderWidth = 1.dp,
-                    ),
-                )
-            } else {
-                Box(
-                    Modifier
-                        .clickable(role = Role.RadioButton) { onSelect(i) }
-                        .semantics { this.selected = i == selected }
-                        .padding(vertical = 5.dp),
-                ) { InkChip(text, solid = i == selected) }
-            }
-        }
-    }
 }

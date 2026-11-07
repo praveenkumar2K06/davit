@@ -48,6 +48,8 @@ data class UiState(
     val mascot: String = "",
     /** Sync every few hours while the app is closed. */
     val background: Boolean = true,
+    /** Sync on open when the data is more than 15 minutes old. */
+    val syncOnOpen: Boolean = true,
     /** Post notifications from background syncs. */
     val alerts: Boolean = true,
     /** "7:51 pm · ok" for the last background run, or null if there hasn't been one. */
@@ -57,6 +59,8 @@ data class UiState(
     val theme: Int = 0,
     /** Ask for fingerprint, face or screen lock when opening the app. */
     val appLock: Boolean = false,
+    /** Calculate remaining classes till the start of the next exam period instead of full semester. */
+    val calcBeforeExam: Boolean = true,
     /** What to notify about, and when (thresholds, muted courses, before-class reminders). */
     val alertPrefs: AlertPrefs = AlertPrefs(),
     /** The display card: the top bar on Home. */
@@ -155,11 +159,13 @@ class Repo(private val context: Context) {
             dumpPages = prefs.getBoolean(K_DUMP, false),
             mascot = prefs.getString(K_MASCOT, "").orEmpty(),
             background = prefs.getBoolean(K_BACKGROUND, true),
+            syncOnOpen = prefs.getBoolean(K_SYNC_OPEN, true),
             alerts = prefs.getBoolean(K_ALERTS, true),
             lastBackground = prefs.getString(K_LAST_BG, null),
             reminders = prefs.getString(K_REMINDERS, null)?.let(Vault::decrypt)?.let(::remindersFromJson).orEmpty(),
             theme = prefs.getInt(K_THEME, 0),
             appLock = prefs.getBoolean(K_LOCK, false),
+            calcBeforeExam = prefs.getBoolean(K_CALC_EXAM, true),
             alertPrefs = AlertPrefs.fromJson(prefs.getString(K_ALERT_PREFS, null)),
             banner = Banner.fromJson(prefs.getString(K_BANNER, null)),
             bannerPhotoAt = bannerPhoto.lastModified(),
@@ -177,7 +183,7 @@ class Repo(private val context: Context) {
     /** Sync on open when the data is more than 15 minutes old. */
     fun onAppOpen() {
         val s = _state.value
-        if (!s.signedIn || s.busy != null) return
+        if (!s.signedIn || s.busy != null || !s.background) return
         val age = System.currentTimeMillis() - (s.snapshot?.syncedAt ?: 0)
         if (age > 15 * 60_000) scope.launch { lock.withLock { syncLocked(everything = false) } }
     }
@@ -514,6 +520,16 @@ class Repo(private val context: Context) {
         prefs.edit {putBoolean(K_BACKGROUND, on)}
         _state.update { it.copy(background = on) }
         BackgroundSync.apply(context, on && _state.value.signedIn)
+    }
+
+    fun setSyncOnOpen(on: Boolean) {
+        prefs.edit { putBoolean(K_SYNC_OPEN, on) }
+        _state.update { it.copy(syncOnOpen = on) }
+    }
+
+    fun setCalcBeforeExam(on: Boolean) {
+        prefs.edit { putBoolean(K_CALC_EXAM, on) }
+        _state.update { it.copy(calcBeforeExam = on) }
     }
 
     fun setAlertPrefs(p: AlertPrefs) {
@@ -966,6 +982,7 @@ class Repo(private val context: Context) {
         private const val K_SMART = "ffcs_smart"
         private const val K_SAVED_PLANS = "ffcs_saved"
         private const val K_BACKGROUND = "background"
+        private const val K_SYNC_OPEN = "syncOnOpen"
         private const val K_ALERTS = "alerts"
         private const val K_ASKED = "askedNotifications"
         private const val K_WELCOMED = "welcomed"
@@ -974,6 +991,7 @@ class Repo(private val context: Context) {
         private const val K_REMINDERS = "reminders"
         private const val K_THEME = "theme"
         private const val K_LOCK = "appLock"
+        private const val K_CALC_EXAM = "calcBeforeExam"
         private const val K_ALERT_PREFS = "alertPrefs"
         private const val K_CAL_GROUP = "calendarGroup:"
         private const val K_CAL_MANUAL = "calendarGroupManual:"

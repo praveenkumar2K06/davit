@@ -1,7 +1,17 @@
 package dev.medriid.davit.design
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.medriid.davit.design.classic.ClassicChip
 import dev.medriid.davit.design.editorial.EditorialChip
 import dev.medriid.davit.design.material.MaterialChip
@@ -23,3 +33,50 @@ fun InkChip(
         AppStyle.Glass, AppStyle.Classic -> ClassicChip(text, modifier, solid, onClick, inks)
     }
 }
+
+/** Chips where the chosen one is solid; wraps onto more lines when it runs out of room. */
+@Composable
+fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+    val inks = LocalInks.current
+
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEachIndexed { i, text ->
+            if (inks.material) {
+                val isSelected = i == selected
+                val labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onSelect(i) },
+                    label = {
+                        BasicText(
+                            text,
+                            maxLines = 1,
+                            softWrap = false,
+                            style = RisoType.label.copy(
+                                color = labelColor,
+                                fontSize = 12.sp,
+                            ),
+                        )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = inks.a,
+                        selectedLabelColor = labelColor,
+                        containerColor = Color.Transparent,
+                        labelColor = labelColor,
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isSelected,
+                        borderColor = inks.rule,
+                        selectedBorderColor = inks.a,
+                        borderWidth = 1.dp,
+                    ),
+                )
+            } else {
+
+            }
+        }
+    }
+}
+

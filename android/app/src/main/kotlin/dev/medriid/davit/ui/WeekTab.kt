@@ -44,6 +44,7 @@ import dev.medriid.davit.data.effectiveCalendar
 import dev.medriid.davit.data.percent
 import dev.medriid.davit.data.weekDates
 import dev.medriid.davit.data.weekOf
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip

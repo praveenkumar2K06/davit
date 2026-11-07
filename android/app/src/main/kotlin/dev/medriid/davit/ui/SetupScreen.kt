@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import dev.medriid.davit.data.Repo
 import dev.medriid.davit.data.UiState
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkText

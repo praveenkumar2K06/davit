@@ -80,6 +80,7 @@ import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.courseName
 import dev.medriid.davit.data.searchMaterials
 import dev.medriid.davit.design.AppStyle
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.CardShape
 import dev.medriid.davit.design.EditorialShape
 import dev.medriid.davit.design.Heading

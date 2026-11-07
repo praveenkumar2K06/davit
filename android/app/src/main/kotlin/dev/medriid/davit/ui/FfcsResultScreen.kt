@@ -37,6 +37,7 @@ import dev.medriid.davit.data.Section
 import dev.medriid.davit.data.asPicks
 import dev.medriid.davit.data.clashes
 import dev.medriid.davit.data.courseName
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkChip
 import dev.medriid.davit.design.InkText

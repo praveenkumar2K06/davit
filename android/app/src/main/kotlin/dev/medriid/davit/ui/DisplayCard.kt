@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.data.Banner
 import dev.medriid.davit.data.BannerStat
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.EditorialShape
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkText

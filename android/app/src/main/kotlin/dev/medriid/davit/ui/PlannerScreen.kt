@@ -37,6 +37,7 @@ import dev.medriid.davit.data.clashesIn
 import dev.medriid.davit.data.clock
 import dev.medriid.davit.data.week
 import dev.medriid.davit.data.with
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip

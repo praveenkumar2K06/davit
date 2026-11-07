@@ -37,6 +37,7 @@ import dev.medriid.davit.data.SmartTimetable
 import dev.medriid.davit.data.clock
 import dev.medriid.davit.data.facultyKey
 import dev.medriid.davit.data.findTimetables
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
