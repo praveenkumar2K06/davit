@@ -6,13 +6,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.app.AlarmManagerCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import dev.medriid.davit.DavitApp
 import dev.medriid.davit.data.Alert
 import dev.medriid.davit.data.AlertChannel
 import dev.medriid.davit.data.mealReminders
 import java.time.LocalDateTime
 import java.time.ZoneId
-import androidx.core.content.edit
 
 /**
  * Meal reminders, the same way as [ClassAlarms]: the next few meals as alarms, set again
@@ -27,7 +29,7 @@ object MealAlarms {
     fun reschedule(context: Context) {
         val app = context.applicationContext as DavitApp
         val st = app.repo.state.value
-        val am = context.getSystemService(AlarmManager::class.java) ?: return
+        val am = ContextCompat.getSystemService(context, AlarmManager::class.java) ?: return
         val store = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         repeat(store.getInt("count", 0)) { am.cancel(pending(context, it, null)) }
         val due = if (st.signedIn && st.alerts) mealReminders(st.alertPrefs, LocalDateTime.now()).take(MAX) else emptyList()
@@ -36,7 +38,7 @@ object MealAlarms {
             val at = r.at.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             val pi = pending(context, i, r.alert)
             if (exact) {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+                AlarmManagerCompat.setExactAndAllowWhileIdle(am, AlarmManager.RTC_WAKEUP, at, pi)
             } else {
                 // Without exact alarms, a short window that ends at the reminder time.
                 am.setWindow(AlarmManager.RTC_WAKEUP, at - 5 * 60_000L, 5 * 60_000L, pi)

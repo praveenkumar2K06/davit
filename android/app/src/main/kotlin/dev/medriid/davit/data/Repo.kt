@@ -653,7 +653,7 @@ class Repo(private val context: Context) {
                 ?: currentSemester(semesters) { s -> withSession(creds) { client.attendance(s.id) }.also { read[s.id] = it } }
                     .also { prefs.edit { putString(K_CUR_SEM, it.id).putLong(K_CUR_SEM_AT, System.currentTimeMillis())} }
             val pinned = prefs.getString(K_SEMESTER, null)
-            if (pinned == current.id) prefs.edit().remove(K_SEMESTER).apply()
+            if (pinned == current.id) prefs.edit { remove(K_SEMESTER) }
             val semester = semesters.firstOrNull { it.id == pinned } ?: current
             val found = read[semester.id]
             val old = _state.value.snapshot?.takeIf { it.semester.id == semester.id }

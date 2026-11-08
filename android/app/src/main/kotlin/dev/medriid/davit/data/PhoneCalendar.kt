@@ -2,7 +2,6 @@ package dev.medriid.davit.data
 
 import android.Manifest
 import android.content.ContentProviderOperation
-import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -11,6 +10,7 @@ import android.provider.CalendarContract.Calendars
 import android.provider.CalendarContract.Events
 import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.core.content.contentValuesOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.core.content.edit
@@ -46,18 +46,18 @@ object PhoneCalendar {
     )?.use { if (it.moveToFirst()) it.getLong(0) else null }
 
     private fun ensureCalendar(context: Context, color: Int): Long = calendarId(context) ?: run {
-        val values = ContentValues().apply {
-            put(Calendars.ACCOUNT_NAME, ACCOUNT)
-            put(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
-            put(Calendars.NAME, "davit-classes")
-            put(Calendars.CALENDAR_DISPLAY_NAME, "daVIT classes")
-            put(Calendars.CALENDAR_COLOR, color)
-            put(Calendars.CALENDAR_ACCESS_LEVEL, Calendars.CAL_ACCESS_OWNER)
-            put(Calendars.OWNER_ACCOUNT, ACCOUNT)
-            put(Calendars.VISIBLE, 1)
-            put(Calendars.SYNC_EVENTS, 1)
-            put(Calendars.CALENDAR_TIME_ZONE, CampusZone.id)
-        }
+        val values = contentValuesOf(
+            Calendars.ACCOUNT_NAME to ACCOUNT,
+            Calendars.ACCOUNT_TYPE to CalendarContract.ACCOUNT_TYPE_LOCAL,
+            Calendars.NAME to "davit-classes",
+            Calendars.CALENDAR_DISPLAY_NAME to "daVIT classes",
+            Calendars.CALENDAR_COLOR to color,
+            Calendars.CALENDAR_ACCESS_LEVEL to Calendars.CAL_ACCESS_OWNER,
+            Calendars.OWNER_ACCOUNT to ACCOUNT,
+            Calendars.VISIBLE to 1,
+            Calendars.SYNC_EVENTS to 1,
+            Calendars.CALENDAR_TIME_ZONE to CampusZone.id,
+        )
         val uri = context.contentResolver.insert(asSyncAdapter(Calendars.CONTENT_URI), values) ?: error("The phone's calendar didn't take a new calendar")
         uri.lastPathSegment!!.toLong()
     }

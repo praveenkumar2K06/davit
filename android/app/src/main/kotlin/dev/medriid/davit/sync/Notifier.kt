@@ -1,21 +1,20 @@
 package dev.medriid.davit.sync
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import dev.medriid.davit.MainActivity
 import dev.medriid.davit.R
 import dev.medriid.davit.data.Alert
 import dev.medriid.davit.data.AlertChannel
-import androidx.core.content.edit
 
 /**
  * Posts [Alert]s, each at most once: keys already sent are remembered (the last few
@@ -28,9 +27,13 @@ object Notifier {
     private const val SCARLET = 0xFFF65058.toInt()
 
     fun ensureChannels(context: Context) {
-        val nm = context.getSystemService(NotificationManager::class.java)
+        val nm = NotificationManagerCompat.from(context)
         AlertChannel.entries.forEach {
-            nm.createNotificationChannel(NotificationChannel(it.id, it.title, NotificationManager.IMPORTANCE_DEFAULT))
+            nm.createNotificationChannel(
+                NotificationChannelCompat.Builder(it.id, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                    .setName(it.title)
+                    .build()
+            )
         }
     }
 

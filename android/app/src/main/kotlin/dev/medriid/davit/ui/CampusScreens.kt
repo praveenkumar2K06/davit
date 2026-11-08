@@ -2,6 +2,7 @@ package dev.medriid.davit.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -449,11 +450,9 @@ internal fun SpotlightScreen(route: Route) {
                                 .fillMaxWidth()
                                 .clickable(role = Role.Button) {
                                     runCatching {
+                                        val uri = s.link?.toUri() ?: return@clickable
                                         context.startActivity(
-                                            Intent(
-                                                Intent.ACTION_VIEW,
-                                                Uri.parse(s.link)
-                                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                         )
                                     }
                                 }
@@ -467,7 +466,7 @@ internal fun SpotlightScreen(route: Route) {
                                     maxLines = 3
                                 )
                                 InkText(
-                                    Uri.parse(s.link).host.orEmpty(),
+                                    s.link?.toUri()?.host.orEmpty(),
                                     style = RisoType.small,
                                     maxLines = 1
                                 )

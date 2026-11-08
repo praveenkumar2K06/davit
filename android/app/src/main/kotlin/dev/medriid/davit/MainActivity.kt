@@ -1,23 +1,22 @@
 package dev.medriid.davit
 
-import android.app.KeyguardManager
 import android.graphics.Color
-import android.hardware.biometrics.BiometricManager.Authenticators
-import android.hardware.biometrics.BiometricPrompt
-import android.os.Build
 import android.os.Bundle
-import android.os.CancellationSignal
 import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import dev.medriid.davit.ui.AppScreen
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     private val repo get() = (application as DavitApp).repo
 
     /** App lock: true until you unlock; set again after a minute in the background. */
@@ -61,27 +60,37 @@ class MainActivity : ComponentActivity() {
             locked = false
             return
         }
-        val builder = BiometricPrompt.Builder(this).setTitle("Unlock daVIT")
-        if (Build.VERSION.SDK_INT >= 30) {
-            builder.setAllowedAuthenticators(Authenticators.BIOMETRIC_WEAK or Authenticators.DEVICE_CREDENTIAL)
-        } else {
-            @Suppress("DEPRECATION")
-            builder.setDeviceCredentialAllowed(true)
-        }
-        builder.build().authenticate(
-            CancellationSignal(), mainExecutor,
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Unlock daVIT")
+            .setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
+            .build()
+
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(
+            this,
+            executor,
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
                     locked = false
                     repo.onAppOpen()
                 }
-            },
+            }
         )
+
+        biometricPrompt.authenticate(promptInfo)
     }
 
     companion object {
-        /** Android 10+ with a screen lock set: otherwise there's nothing to unlock with. */
-        fun canLock(activity: ComponentActivity): Boolean =
-            Build.VERSION.SDK_INT >= 29 && activity.getSystemService(KeyguardManager::class.java).isDeviceSecure
+        /** Checks if the device supports biometric or credential lock and has one enrolled. */
+        fun canLock(activity: ComponentActivity): Boolean {
+            val biometricManager = BiometricManager.from(activity)
+            val authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+
+            return biometricManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+        }
     }
 }

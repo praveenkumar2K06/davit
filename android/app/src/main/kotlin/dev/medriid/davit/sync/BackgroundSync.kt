@@ -10,6 +10,8 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
+import androidx.core.app.AlarmManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -59,7 +61,7 @@ object BackgroundSync {
      * MIUI…) freeze restricted apps a few seconds into a background job.
      */
     fun unrestricted(context: Context): Boolean =
-        context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
+        (ContextCompat.getSystemService(context, PowerManager::class.java))?.isIgnoringBatteryOptimizations(context.packageName) == true
 
     /** Android's own "let this app run in the background" dialog, or its list if that's unavailable. */
     @SuppressLint("BatteryLife")
@@ -85,7 +87,7 @@ object BackgroundSync {
 
     fun apply(context: Context, on: Boolean) {
         WorkManager.getInstance(context).cancelUniqueWork(WORK)
-        val am = context.getSystemService(AlarmManager::class.java) ?: return
+        val am = ContextCompat.getSystemService(context, AlarmManager::class.java) ?: return
         val pi = pending(context)
         if (!on) {
             am.cancel(pi)
@@ -93,7 +95,7 @@ object BackgroundSync {
         }
         val at = nextSyncAt(LocalDateTime.now()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) {
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            AlarmManagerCompat.setExactAndAllowWhileIdle(am, AlarmManager.RTC_WAKEUP, at, pi)
         } else {
             // Without exact alarms, a short window that starts at the slot.
             am.setWindow(AlarmManager.RTC_WAKEUP, at, 5 * 60_000L, pi)

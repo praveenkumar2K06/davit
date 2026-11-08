@@ -1,12 +1,11 @@
 package dev.medriid.davit.sync
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.util.Log
+import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
@@ -128,8 +127,12 @@ object AutoUpdate {
 
     internal fun notifyReady(context: Context, r: Ready) {
         if (!Notifier.permitted(context)) return
-        val nm = context.getSystemService(NotificationManager::class.java)
-        nm.createNotificationChannel(NotificationChannel(CHANNEL, "App updates", NotificationManager.IMPORTANCE_DEFAULT))
+        val nm = NotificationManagerCompat.from(context)
+        nm.createNotificationChannel(
+            NotificationChannelCompat.Builder(CHANNEL, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                .setName("App updates")
+                .build()
+        )
         // Android's installer itself, so one tap installs; it asks about unknown apps if it needs to.
         val tap = PendingIntent.getActivity(
             context, 0, installIntent(context, r).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
