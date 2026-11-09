@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkText

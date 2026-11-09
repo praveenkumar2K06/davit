@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.BannerStat
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Repo
 import dev.medriid.davit.data.UiState
 import dev.medriid.davit.data.bannerText
@@ -328,7 +329,7 @@ private fun RouteHost(route: Route) = when (route) {
     Route.ClubDirectory -> ClubDirectoryScreen(route)
     Route.SignIns -> SignInsScreen(route)
     is Route.FacultyReview -> FacultyReviewScreen(route)
-    is Route.PdfView -> PdfScreen(route)
+    is Route.PdfView -> PdfScreen(route.key, route.path, route.title)
 }
 
 @Composable
@@ -360,9 +361,10 @@ internal fun TopBar(state: UiState, mascot: Mascot, photo: java.io.File, card: B
                 .padding(horizontal = 6.dp, vertical = 4.dp),
             horizontalAlignment = Alignment.End,
         ) {
-            if (state.busy != null) {
+            val busyText = state.busy
+            if (busyText != null) {
                 InkText("Syncing", label = true)
-                InkText(state.busy, style = RisoType.small.copy(textAlign = TextAlign.End), maxLines = 1)
+                InkText(busyText, style = RisoType.small.copy(textAlign = TextAlign.End), maxLines = 1)
             } else {
                 InkText("Synced", label = true)
                 InkText(state.snapshot?.syncedAt?.let { ago(it) } ?: "never", style = RisoType.small)

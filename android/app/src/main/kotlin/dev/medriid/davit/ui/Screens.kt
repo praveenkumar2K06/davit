@@ -34,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -46,6 +45,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Repo
 import dev.medriid.davit.data.sizeText
 import dev.medriid.davit.design.DrumIndicator
@@ -64,8 +64,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.OutputStream
-
-val LocalRepo = staticCompositionLocalOf<Repo> { error("no Repo") }
 
 /**
  * A screen above the tabs: back + title, pull to refresh (the drum) when [onRefresh] is

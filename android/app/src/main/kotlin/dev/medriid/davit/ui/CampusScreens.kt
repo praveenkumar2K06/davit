@@ -1,8 +1,6 @@
 package dev.medriid.davit.ui
 
 import android.content.Intent
-import android.net.Uri
-import androidx.core.net.toUri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,11 +30,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Section
 import dev.medriid.davit.data.courseIn
 import dev.medriid.davit.data.courseName
+import dev.medriid.davit.data.fmtNum
 import dev.medriid.davit.data.sessionGpas
 import dev.medriid.davit.data.sizeText
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkCard
@@ -52,8 +54,6 @@ import dev.medriid.davit.vtop.Person
 import dev.medriid.davit.vtop.VtopMessage
 import java.util.Locale
 import kotlin.math.floor
-import androidx.core.net.toUri
-import dev.medriid.davit.design.ChoiceRow
 
 /** One tile on the campus hub. */
 private data class Tile(

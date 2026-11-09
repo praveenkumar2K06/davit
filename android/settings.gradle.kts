@@ -18,4 +18,17 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "daVIT"
-include(":app", ":design", ":core")
+include(
+    ":app",
+    ":design",
+    ":core",
+    ":core:model",
+    ":core:data",
+    ":feature:scanner",
+    ":feature:map",
+    ":feature:academics",
+    ":feature:ffcs",
+    ":feature:materials",
+    ":feature:mess",
+    ":feature:settings",
+)

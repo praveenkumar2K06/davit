@@ -1,5 +1,7 @@
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.data.titleCase as personName
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Section
 import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.InkButton

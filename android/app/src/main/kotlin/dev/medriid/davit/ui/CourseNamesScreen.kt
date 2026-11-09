@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.design.InkField
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks

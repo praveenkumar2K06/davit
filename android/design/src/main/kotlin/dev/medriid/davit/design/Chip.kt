@@ -1,7 +1,10 @@
 package dev.medriid.davit.design
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.FilterChip
@@ -10,6 +13,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.design.classic.ClassicChip
@@ -74,7 +80,12 @@ fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
                     ),
                 )
             } else {
-
+                Box(
+                    Modifier
+                        .clickable(role = Role.RadioButton) { onSelect(i) }
+                        .semantics { this.selected = i == selected }
+                        .padding(vertical = 5.dp),
+                ) { InkChip(text, solid = i == selected) }
             }
         }
     }

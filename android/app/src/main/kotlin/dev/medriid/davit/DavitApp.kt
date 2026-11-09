@@ -2,6 +2,7 @@ package dev.medriid.davit
 
 import android.app.Application
 import dev.medriid.davit.data.Repo
+import dev.medriid.davit.data.RepoProvider
 import dev.medriid.davit.sync.AutoUpdate
 import dev.medriid.davit.sync.BackgroundSync
 import dev.medriid.davit.sync.ClassAlarms
@@ -12,8 +13,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class DavitApp : Application() {
-    val repo: Repo by lazy { Repo(this) }
+class DavitApp : Application(), RepoProvider {
+    override val repo: Repo by lazy { Repo(this) }
 
     override fun onCreate() {
         super.onCreate()

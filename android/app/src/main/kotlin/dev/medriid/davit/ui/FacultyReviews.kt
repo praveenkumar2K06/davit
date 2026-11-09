@@ -1,5 +1,7 @@
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.data.titleCase as personName
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.FacultyBook
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.FacultyReview
 import dev.medriid.davit.data.ReviewedFaculty
 import dev.medriid.davit.design.HalftoneBar

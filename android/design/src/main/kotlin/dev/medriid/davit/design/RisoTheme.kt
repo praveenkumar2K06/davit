@@ -2,21 +2,20 @@ package dev.medriid.davit.design
 
 import android.os.Build
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.TextUnit
-
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 
 /** Provides the ink pair to everything below. Wrap the root in [Grain] for paper + grain. */
 @Composable
@@ -26,46 +25,42 @@ fun RisoTheme(inks: Inks = InkPairs.all.first(), content: @Composable () -> Unit
     RisoType.editorial = inks.editorial
     RisoType.material = inks.material
 
-    if (inks.material) {
-        val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-        val colorScheme = if (inks.dark) {
-            if (dynamicColor) {
-                dynamicDarkColorScheme(LocalContext.current)
-            } else {
-                darkColorScheme(
-                    primary = inks.a,
-                    onPrimary = inks.onA,
-                    surface = inks.paper,
-                    onSurface = inks.text,
-                    surfaceVariant = inks.surface,
-                    onSurfaceVariant = inks.text,
-                    outline = inks.rule,
-                )
-            }
-        } else {
-            if (dynamicColor) {
-                dynamicLightColorScheme(LocalContext.current)
-            } else {
-                lightColorScheme(
-                    primary = inks.a,
-                    onPrimary = inks.onA,
-                    surface = inks.paper,
-                    onSurface = inks.text,
-                    surfaceVariant = inks.surface,
-                    onSurfaceVariant = inks.text,
-                    outline = inks.rule,
-                )
-            }
-        }
-        MaterialTheme(
-            colorScheme = colorScheme,
-            content = {
-                CompositionLocalProvider(LocalInks provides inks, content = content)
-            },
+    val context = LocalContext.current
+    val dynamicColor = inks.material && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val dynamicScheme = if (dynamicColor) {
+        runCatching {
+            if (inks.dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }.getOrNull()
+    } else null
+
+    val colorScheme = dynamicScheme ?: if (inks.dark) {
+        darkColorScheme(
+            primary = inks.a,
+            onPrimary = inks.onA,
+            surface = inks.paper,
+            onSurface = inks.text,
+            surfaceVariant = inks.surface,
+            onSurfaceVariant = inks.text,
+            outline = inks.rule,
         )
     } else {
-        CompositionLocalProvider(LocalInks provides inks, content = content)
+        lightColorScheme(
+            primary = inks.a,
+            onPrimary = inks.onA,
+            surface = inks.paper,
+            onSurface = inks.text,
+            surfaceVariant = inks.surface,
+            onSurfaceVariant = inks.text,
+            outline = inks.rule,
+        )
     }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        content = {
+            CompositionLocalProvider(LocalInks provides inks, content = content)
+        },
+    )
 }
 
 /**

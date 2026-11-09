@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.PlanPick
 import dev.medriid.davit.data.allocationOptions
 import dev.medriid.davit.data.asText

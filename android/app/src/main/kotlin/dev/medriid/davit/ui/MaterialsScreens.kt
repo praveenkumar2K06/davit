@@ -70,6 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.CachedCourse
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.FilterOption
 import dev.medriid.davit.data.MaterialFilter
 import dev.medriid.davit.data.MaterialResults

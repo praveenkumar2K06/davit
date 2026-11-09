@@ -17,6 +17,8 @@ android {
 }
 
 dependencies {
+    api(project(":core"))
+    api(project(":core:model"))
     val bom = platform(libs.compose.bom)
     implementation(bom)
     api(libs.compose.ui)

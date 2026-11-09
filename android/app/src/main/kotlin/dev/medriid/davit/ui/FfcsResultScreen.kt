@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Section
 import dev.medriid.davit.data.asPicks
 import dev.medriid.davit.data.clashes

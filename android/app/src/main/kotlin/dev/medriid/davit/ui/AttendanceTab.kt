@@ -32,6 +32,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.drawscope.Stroke
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.key
 import dev.medriid.davit.data.remainingFor

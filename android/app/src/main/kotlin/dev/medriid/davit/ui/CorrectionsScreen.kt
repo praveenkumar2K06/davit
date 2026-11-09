@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.data.CorrectionState
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.correctionsMessage
 import dev.medriid.davit.data.isLabType

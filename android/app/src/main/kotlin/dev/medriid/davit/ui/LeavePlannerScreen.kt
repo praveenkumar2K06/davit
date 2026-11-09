@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.LeaveVerdict
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.afterLeave
 import dev.medriid.davit.data.effectiveCalendar
 import dev.medriid.davit.data.isLabType

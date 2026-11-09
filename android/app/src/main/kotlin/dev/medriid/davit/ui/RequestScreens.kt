@@ -1,5 +1,8 @@
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.data.titleCase as personName
+
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.courseName
 import androidx.compose.runtime.collectAsState
 import androidx.compose.animation.AnimatedVisibility

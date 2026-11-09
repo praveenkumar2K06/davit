@@ -1,5 +1,9 @@
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.data.LocalRepo
+import dev.medriid.davit.data.Picked
+import dev.medriid.davit.data.readPicked
+
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.animation.AnimatedVisibility
@@ -513,11 +517,13 @@ private fun MessComplaint() {
 
     val f = file
     val ext = f?.name?.substringAfterLast('.', "")?.lowercase().orEmpty()
+    val b = f?.bytes
+    val size = b?.size?.toLong() ?: f?.size ?: 0L
     val problem = when {
         text.isBlank() -> "Say what happened."
         f == null -> "Add a photo or PDF."
         ext !in setOf("jpg", "jpeg", "png", "pdf") -> "VTOP takes JPG, PNG or PDF only."
-        f.bytes == null || (f.size ?: f.bytes.size.toLong()) > dev.medriid.davit.vtop.VtopClient.MESS_FILE || f.bytes.size > dev.medriid.davit.vtop.VtopClient.MESS_FILE -> "\"${f.name}\" is over 5 MB. VTOP takes 5 MB at most."
+        b == null || size > dev.medriid.davit.vtop.VtopClient.MESS_FILE -> "\"${f.name}\" is over 5 MB. VTOP takes 5 MB at most."
         else -> null
     }
     InkCard(Modifier.fillMaxWidth(), kind = dev.medriid.davit.design.Kind.Vtop, plateOffset = 4.dp) {

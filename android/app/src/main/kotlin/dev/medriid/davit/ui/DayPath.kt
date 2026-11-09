@@ -1,5 +1,8 @@
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.data.atRisk
+import dev.medriid.davit.data.mustAttend
+
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -219,11 +222,12 @@ private fun ClassStopItem(slot: ClassSlot, minute: Int, nodeY: androidx.compose.
     val m = slot.meeting
     val done = m.end <= minute
     val live = m.start <= minute && minute < m.end
-    val risk = !done && slot.attendance?.atRisk == true
+    val att: dev.medriid.davit.vtop.AttendanceRow? = slot.attendance
+    val risk = !done && att?.atRisk == true
     val second = when {
         live -> "now"
         done -> "done"
-        risk -> "attend ${slot.attendance.mustAttend}"
+        risk && att != null -> "attend ${att.mustAttend}"
         else -> slot.course.venue.ifBlank { if (slot.isLab) "lab" else "theory" }
     }
     val said = listOf(slot.course.courseName, if (slot.isLab) "lab" else "theory", "${clock(m.start)} to ${clock(m.end)}", if (live) "on now" else second).joinToString(", ")

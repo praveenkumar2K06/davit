@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.AlertPrefs
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Meal
 import dev.medriid.davit.data.Mess
 import dev.medriid.davit.data.MessDay

@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Reminder
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.atRisk

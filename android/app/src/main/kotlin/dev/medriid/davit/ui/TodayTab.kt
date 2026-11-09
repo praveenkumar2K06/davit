@@ -1,5 +1,10 @@
 package dev.medriid.davit.ui
 
+import dev.medriid.davit.data.dueDay
+import dev.medriid.davit.data.fmtNum
+
+import dev.medriid.davit.data.showOnMap
+
 import android.app.DatePickerDialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -33,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.ClassSlot
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Reminder
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.TodayPlan
@@ -437,12 +443,14 @@ private fun PickedClass(slot: ClassSlot, now: LocalDateTime, isNext: Boolean, re
         m.start <= minute -> "On now"
         else -> (if (isNext) "Next, " else "Later, ") + if (mins < 60) "in $mins min" else "in ${mins / 60} h ${mins % 60} min"
     }
+    val nav = LocalNav.current
+    val repo = LocalRepo.current
     Column(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             InkText(slot.course.courseName, style = RisoType.body.copy(fontWeight = FontWeight.SemiBold), maxLines = 1, modifier = Modifier.weight(1f))
             if (slot.course.venue.isNotBlank()) {
                 Spacer(Modifier.width(8.dp))
-                dev.medriid.davit.ui.map.MapChip(slot.course.venue)
+                dev.medriid.davit.ui.map.MapChip(slot.course.venue) { nav.showOnMap(repo, slot.course.venue) }
             }
         }
         InkText("$status · ${if (slot.isLab) "Lab" else "Theory"}", style = RisoType.small, maxLines = 1)
@@ -458,6 +466,8 @@ private fun PickedClass(slot: ClassSlot, now: LocalDateTime, isNext: Boolean, re
 /** The next class when none are left today. With no path above it ([showEnd]), this is the only place its times show. */
 @Composable
 private fun NextClass(slot: ClassSlot, plan: TodayPlan, remaining: Int?, showEnd: Boolean, onClick: () -> Unit) {
+    val nav = LocalNav.current
+    val repo = LocalRepo.current
     val day = when (plan.nextInDays) {
         1 -> "tomorrow"
         else -> (plan.nextDate?.dayOfWeek ?: DayOfWeek.of(slot.meeting.day)).getDisplayName(TextStyle.FULL, Locale.ENGLISH)
@@ -470,7 +480,7 @@ private fun NextClass(slot: ClassSlot, plan: TodayPlan, remaining: Int?, showEnd
             }
             if (slot.course.venue.isNotBlank()) {
                 Spacer(Modifier.width(8.dp))
-                dev.medriid.davit.ui.map.MapChip(slot.course.venue)
+                dev.medriid.davit.ui.map.MapChip(slot.course.venue) { nav.showOnMap(repo, slot.course.venue) }
             }
         }
         InkText(
