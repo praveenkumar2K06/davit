@@ -7,6 +7,7 @@ import dev.medriid.davit.sync.BackgroundSync
 import dev.medriid.davit.sync.ClassAlarms
 import dev.medriid.davit.sync.MealAlarms
 import dev.medriid.davit.sync.Notifier
+import dev.medriid.davit.widget.DavitWidget
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -23,6 +24,8 @@ class DavitApp : Application() {
         repo.state.value.let { BackgroundSync.apply(this, it.signedIn && it.background) }
         // A download from before, and the daily check for a new release.
         AutoUpdate.start(this)
+        // Refresh widgets and publish generated widget previews on supported versions.
+        DavitWidget.refresh(this)
         // Before-class reminders follow the timetable, attendance and your settings.
         repo.scope.launch {
             repo.state

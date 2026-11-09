@@ -3,6 +3,7 @@ package dev.medriid.davit.widget
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -13,6 +14,7 @@ import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.PreviewSizeMode
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -43,10 +45,22 @@ import java.time.LocalDateTime
  */
 class AttendanceWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
+    override val previewSizeMode: PreviewSizeMode = SizeMode.Responsive(
+        setOf(
+            DpSize(250.dp, 110.dp),
+            DpSize(320.dp, 160.dp),
+        )
+    )
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val state = (context.applicationContext as DavitApp).repo.state.value
         provideContent { Content(state, LocalDateTime.now()) }
+    }
+
+    override suspend fun providePreview(context: Context, widgetCategory: Int) {
+        val state = (context.applicationContext as? DavitApp)?.repo?.state?.value
+        val previewState = if (state?.signedIn == true && state.snapshot != null) state else sampleState()
+        provideContent { Content(previewState, LocalDateTime.now()) }
     }
 }
 

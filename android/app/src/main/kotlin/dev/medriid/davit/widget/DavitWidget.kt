@@ -2,8 +2,10 @@ package dev.medriid.davit.widget
 
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -13,9 +15,13 @@ import androidx.glance.LocalContext
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.PreviewSizeMode
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.setWidgetPreviews
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Column
@@ -54,9 +60,22 @@ import java.time.format.TextStyle as JavaTextStyle
  * due. Paper and ink from your ink pair. Redrawn after every sync and every 30 minutes.
  */
 class DavitWidget : GlanceAppWidget() {
+    override val previewSizeMode: PreviewSizeMode = SizeMode.Responsive(
+        setOf(
+            DpSize(250.dp, 110.dp),
+            DpSize(320.dp, 160.dp),
+        )
+    )
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val state = (context.applicationContext as DavitApp).repo.state.value
         provideContent { Content(state, LocalDateTime.now()) }
+    }
+
+    override suspend fun providePreview(context: Context, widgetCategory: Int) {
+        val state = (context.applicationContext as? DavitApp)?.repo?.state?.value
+        val previewState = if (state?.signedIn == true && state.snapshot != null) state else sampleState()
+        provideContent { Content(previewState, LocalDateTime.now()) }
     }
 
     companion object {
@@ -65,6 +84,10 @@ class DavitWidget : GlanceAppWidget() {
             CoroutineScope(Dispatchers.Default).launch {
                 runCatching { DavitWidget().updateAll(context.applicationContext) }
                 runCatching { AttendanceWidget().updateAll(context.applicationContext) }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    runCatching { GlanceAppWidgetManager(context.applicationContext).setWidgetPreviews<DavitWidgetReceiver>() }
+                    runCatching { GlanceAppWidgetManager(context.applicationContext).setWidgetPreviews<AttendanceWidgetReceiver>() }
+                }
             }
         }
     }
