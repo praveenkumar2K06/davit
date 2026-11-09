@@ -46,7 +46,12 @@ class FacultyReviewsTest {
     }
 
     @Test fun `the bundled file parses in full with no personal fields`() {
-        val text = File("src/main/assets/faculty-reviews/reviews.json").readText()
+        val path = listOf(
+            "app/src/main/assets/faculty-reviews/reviews.json",
+            "src/main/assets/faculty-reviews/reviews.json",
+            "../../app/src/main/assets/faculty-reviews/reviews.json"
+        ).firstOrNull { File(it).exists() } ?: "app/src/main/assets/faculty-reviews/reviews.json"
+        val text = File(path).readText()
         val all = FacultyBook.parse(text).faculty
         assertEquals(3116, all.size)
         assertEquals(4767, all.sumOf { it.reviews.size })

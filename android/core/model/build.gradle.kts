@@ -19,4 +19,5 @@ dependencies {
     api(project(":core"))
     api(libs.kotlinx.serialization.json)
     implementation(libs.json)
+    testImplementation(libs.junit)
 }
