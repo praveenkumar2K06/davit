@@ -130,7 +130,7 @@ fun AppScreen(repo: Repo, locked: Boolean = false, onUnlock: () -> Unit = {}) {
             tab.intValue = 0
         }
     }
-    RisoTheme(inks = inks) {
+    RisoTheme(darkTheme = dark, inks = inks) {
         // Switching style rebuilds everything, so every text picks up its type.
         key(inks.style) {
         Grain(Modifier.fillMaxSize()) {

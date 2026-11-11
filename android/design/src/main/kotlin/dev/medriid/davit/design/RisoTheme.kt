@@ -31,9 +31,7 @@ fun RisoTheme(
     inks: Inks = if (darkTheme) InkPairs.night.first() else InkPairs.all.first(),
     content: @Composable () -> Unit,
 ) {
-    val activeInks = if (darkTheme && !inks.dark) {
-        InkPairs.night.firstOrNull { it.name == inks.name } ?: inks.copy(dark = true)
-    } else inks
+    val activeInks = inks
 
     // The type follows the look; set before anything below composes.
     RisoType.soft = activeInks.soft
