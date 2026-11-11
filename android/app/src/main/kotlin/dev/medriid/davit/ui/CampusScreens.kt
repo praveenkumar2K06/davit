@@ -39,10 +39,12 @@ import dev.medriid.davit.data.fmtNum
 import dev.medriid.davit.data.sessionGpas
 import dev.medriid.davit.data.sizeText
 import dev.medriid.davit.design.ChoiceRow
+import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
+import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.Overprint

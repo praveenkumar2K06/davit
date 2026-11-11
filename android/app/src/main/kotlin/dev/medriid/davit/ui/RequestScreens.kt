@@ -21,9 +21,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkText
+import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.rememberHaptics

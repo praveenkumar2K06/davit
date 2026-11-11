@@ -87,7 +87,7 @@ private enum class MessPanel { None, Mess, Calendar, Bell }
  * sheet doesn't cover says so rather than guessing. The bell sets a reminder per meal.
  */
 @Composable
-internal fun MessMenuScreen(route: Route) {
+fun MessMenuScreen(route: Route) {
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val prefs = state.alertPrefs

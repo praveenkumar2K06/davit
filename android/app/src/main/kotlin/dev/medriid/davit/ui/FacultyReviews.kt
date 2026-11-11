@@ -31,10 +31,12 @@ import dev.medriid.davit.data.FacultyBook
 import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.FacultyReview
 import dev.medriid.davit.data.ReviewedFaculty
+import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.HalftoneBar
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
 import dev.medriid.davit.design.InkText
+import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.RisoType
 import java.util.Locale
 

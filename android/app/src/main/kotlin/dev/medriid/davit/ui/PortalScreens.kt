@@ -1,7 +1,5 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.data.titleCase as personName
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,12 +29,14 @@ import androidx.compose.ui.unit.dp
 import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Section
 import dev.medriid.davit.design.ChoiceRow
+import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
 import dev.medriid.davit.design.InkField
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.Kind
+import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
 import dev.medriid.davit.vtop.SimpleTable
@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import dev.medriid.davit.data.titleCase as personName
 
 private val Dated = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
 

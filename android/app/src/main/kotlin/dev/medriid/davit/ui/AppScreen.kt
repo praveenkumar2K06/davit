@@ -24,7 +24,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,10 +37,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -183,7 +180,7 @@ private fun Main(state: UiState, repo: Repo, tabState: MutableIntState, stack: S
             Column(Modifier.fillMaxSize()) {
                 // The display card on Home only; every other tab and screen gets the plain bar.
                 // Soft Home draws its own hello in place of the bar.
-                if ((LocalInks.current.soft || LocalInks.current.editorial) && tab == 0 && stack.isEmpty()) Spacer(Modifier.statusBarsPadding())
+                if ((LocalInks.current.soft || LocalInks.current.editorial || LocalInks.current.material) && tab == 0 && stack.isEmpty()) Spacer(Modifier.statusBarsPadding())
                 else TopBar(state, mascot, repo.bannerPhoto, card = tab == 0 && stack.isEmpty(), onSync = repo::sync, onProfile = { nav.go(Route.Settings) }, onMore = { nav.go(Route.Campus) }, modifier = Modifier.statusBarsPadding(), onHome = { nav.tab(0) })
                 AnimatedVisibility(state.error != null) {
                     ErrorBanner(state.error.orEmpty(), onRetry = repo::sync, onDismiss = repo::dismissError)
@@ -552,18 +549,6 @@ private fun FirstSync(busy: String?) {
     }
 }
 
-/** Scrollable tab body with the standard gutters. */
-@Composable
-internal fun TabColumn(content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = Gutter)
-            .padding(top = 10.dp, bottom = 24.dp),
-        content = content,
-    )
-}
 
 @Composable
 internal fun SectionTitle(text: String, modifier: Modifier = Modifier) {

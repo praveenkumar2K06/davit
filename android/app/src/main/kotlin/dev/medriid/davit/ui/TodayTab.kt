@@ -1,10 +1,5 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.data.dueDay
-import dev.medriid.davit.data.fmtNum
-
-import dev.medriid.davit.data.showOnMap
-
 import android.app.DatePickerDialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -22,8 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,12 +39,15 @@ import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.TodayPlan
 import dev.medriid.davit.data.atRisk
 import dev.medriid.davit.data.clock
+import dev.medriid.davit.data.dueDay
+import dev.medriid.davit.data.fmtNum
 import dev.medriid.davit.data.hint
 import dev.medriid.davit.data.mustAttend
 import dev.medriid.davit.data.overallPercent
 import dev.medriid.davit.data.percent
 import dev.medriid.davit.data.planFor
 import dev.medriid.davit.data.remainingFor
+import dev.medriid.davit.data.showOnMap
 import dev.medriid.davit.data.weekOf
 import dev.medriid.davit.design.AppStyle
 import dev.medriid.davit.design.ChoiceRow

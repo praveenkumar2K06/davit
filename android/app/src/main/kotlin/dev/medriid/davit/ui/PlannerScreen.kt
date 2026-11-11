@@ -1,10 +1,5 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.data.summary
-import dev.medriid.davit.data.courseName
-import dev.medriid.davit.design.InkField
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,9 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,14 +33,19 @@ import dev.medriid.davit.data.asText
 import dev.medriid.davit.data.clashes
 import dev.medriid.davit.data.clashesIn
 import dev.medriid.davit.data.clock
+import dev.medriid.davit.data.courseName
+import dev.medriid.davit.data.summary
 import dev.medriid.davit.data.week
 import dev.medriid.davit.data.with
 import dev.medriid.davit.design.ChoiceRow
+import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
+import dev.medriid.davit.design.InkField
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.Kind
+import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.printIn

@@ -20,8 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.design.ChoiceRow
+import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkText
+import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.printIn
 import dev.medriid.davit.vtop.Allocation

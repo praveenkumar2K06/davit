@@ -62,7 +62,7 @@ import java.util.Locale
  * days; then the best timetables that fit, each a tap from your plan.
  */
 @Composable
-internal fun SmartFfcs(
+fun SmartFfcs(
     semester: String,
     categories: List<Pair<String, String>>,
     onUse: (Int, List<PlanPick>) -> Unit

@@ -41,7 +41,7 @@ fun InkCard(
 ) {
     val inks = LocalInks.current
     when (inks.style) {
-        AppStyle.Material3 -> MaterialCard(modifier, onClick, contentPadding, content)
+        AppStyle.Material3 -> MaterialCard(modifier, onClick, fill, contentPadding = contentPadding, content = content)
         AppStyle.Editorial -> EditorialCard(modifier, onClick, fill, kind, plate, contentPadding, inks, content)
         AppStyle.Soft -> SoftCard(modifier, onClick, fill, kind, plate, contentPadding, inks, content)
         AppStyle.Glass -> GlassCard(modifier, onClick, kind, fill, plate, plateOffset, contentPadding, inks, content)

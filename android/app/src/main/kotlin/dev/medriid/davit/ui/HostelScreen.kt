@@ -1,9 +1,5 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.data.LocalRepo
-import dev.medriid.davit.data.Picked
-import dev.medriid.davit.data.readPicked
-
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.animation.AnimatedVisibility
@@ -20,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,10 +28,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.medriid.davit.data.LocalRepo
+import dev.medriid.davit.data.Picked
+import dev.medriid.davit.data.readPicked
 import dev.medriid.davit.design.AppStyle
 import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.DatePickerModal
-import dev.medriid.davit.design.TimePickerModal
+import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
 import dev.medriid.davit.design.InkChip
@@ -43,16 +43,16 @@ import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
+import dev.medriid.davit.design.TimePickerModal
 import dev.medriid.davit.design.printIn
 import dev.medriid.davit.design.rememberHaptics
-import androidx.compose.runtime.mutableStateMapOf
 import dev.medriid.davit.vtop.FormPage
 import dev.medriid.davit.vtop.Leave
 import dev.medriid.davit.vtop.LeaveForm
-import dev.medriid.davit.vtop.Reply
 import dev.medriid.davit.vtop.LeaveOutcome
 import dev.medriid.davit.vtop.LeaveRequest
 import dev.medriid.davit.vtop.NightSlip
+import dev.medriid.davit.vtop.Reply
 import dev.medriid.davit.vtop.UserConsent
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime

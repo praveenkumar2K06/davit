@@ -227,7 +227,7 @@ private fun SearchLauncher(modifier: Modifier, onClick: () -> Unit) {
  * folded. Each file downloads with progress and opens offline after.
  */
 @Composable
-internal fun CourseScreen(route: Route.Course) {
+fun CourseScreen(route: Route.Course) {
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val campus by repo.campus.state.collectAsState()
@@ -357,7 +357,7 @@ internal fun nameCase(s: String): String = buildString(s.length) {
     s.forEachIndexed { i, c -> append(if (i == 0 || !s[i - 1].isLetter()) c.uppercaseChar() else c.lowercaseChar()) }
 }
 
-internal fun titleCase(s: String) = s.split(' ').filter { it.isNotBlank() }.joinToString(" ") { w ->
+fun titleCase(s: String) = s.split(' ').filter { it.isNotBlank() }.joinToString(" ") { w ->
     if (w.length <= 2 && w.all(Char::isUpperCase)) w else w.lowercase().replaceFirstChar { it.uppercase() }
 }
 
@@ -370,7 +370,7 @@ internal fun titleCase(s: String) = s.split(' ').filter { it.isNotBlank() }.join
  * index and every search run on a background thread, so typing never waits on it.
  */
 @Composable
-internal fun SearchScreen(route: Route) {
+fun SearchScreen(route: Route) {
     val repo = LocalRepo.current
     val inks = LocalInks.current
     val state by repo.state.collectAsState()
@@ -703,7 +703,7 @@ private fun sheetShape(inks: Inks): Shape = when {
 }
 
 @Composable
-internal fun SearchField(value: String, onChange: (String) -> Unit, onDone: () -> Unit, autoFocus: Boolean = true) {
+fun SearchField(value: String, onChange: (String) -> Unit, onDone: () -> Unit, autoFocus: Boolean = true) {
     val inks = LocalInks.current
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { if (autoFocus) runCatching { focus.requestFocus() } }

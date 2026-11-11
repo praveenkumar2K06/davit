@@ -59,7 +59,7 @@ import java.util.Locale
 
 /** Your FFCS result: next semester's registered classes as a timetable and as a table of courses. Read only. */
 @Composable
-internal fun FfcsResultScreen(route: Route) {
+fun FfcsResultScreen(route: Route) {
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val campus by repo.campus.state.collectAsState()
