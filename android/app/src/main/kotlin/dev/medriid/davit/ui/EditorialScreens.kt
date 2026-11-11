@@ -154,7 +154,7 @@ internal fun EditorialHome(snapshot: Snapshot, reminders: List<Reminder>, onOpen
     val nav = LocalNav.current
     val now = remember { LocalDateTime.now() }
     val today = now.toLocalDate()
-    val plan = remember(snapshot) { planFor(weekOf(snapshot), now, snapshot.calendar) }
+    val plan = remember(snapshot, state.followCalendar) { planFor(weekOf(snapshot), now, snapshot.calendar, state.followCalendar) }
     val due = snapshot.assignments.flatMap { c -> c.items.map { c to it } }
         .filter { (_, a) -> a.updated == null }
         .mapNotNull { (c, a) -> vtopDate(a.due)?.takeIf { !it.isBefore(today) && ChronoUnit.DAYS.between(today, it) <= 7 }?.let { Triple(c, a, it) } }

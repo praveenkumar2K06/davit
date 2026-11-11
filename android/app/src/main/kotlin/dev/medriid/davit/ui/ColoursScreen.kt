@@ -270,7 +270,7 @@ private fun PairChip(pair: Inks, selected: Boolean, onClick: () -> Unit) {
 /** A small slice of the app in [inks]: a heading, a class and a due card, a chip and a button. */
 @Composable
 private fun Preview(inks: Inks) {
-    RisoTheme(inks) {
+    RisoTheme(inks = inks) {
         Column(
             Modifier.fillMaxWidth().clip(CardShape).background(inks.paper).border(2.dp, inks.text, CardShape).padding(14.dp),
         ) {

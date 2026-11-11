@@ -52,9 +52,9 @@ data class TodayPlan(
  * Now and next. With a [calendar], holidays and exam days have no classes and a
  * substituted day (a Saturday running Monday's order) uses that weekday's timetable.
  */
-fun planFor(week: Map<Int, List<ClassSlot>>, at: LocalDateTime, calendar: AcademicCalendar? = null): TodayPlan {
+fun planFor(week: Map<Int, List<ClassSlot>>, at: LocalDateTime, calendar: AcademicCalendar? = null, followCalendar: Boolean = true): TodayPlan {
     val date = at.toLocalDate()
-    fun classesOn(d: LocalDate) = classesOn(week, d, calendar)
+    fun classesOn(d: LocalDate) = classesOn(week, d, calendar, followCalendar)
     val minute = at.hour * 60 + at.minute
     val today = classesOn(date)
     val now = today.firstOrNull { minute >= it.meeting.start && minute < it.meeting.end }
@@ -80,9 +80,16 @@ fun planFor(week: Map<Int, List<ClassSlot>>, at: LocalDateTime, calendar: Academ
  * The classes on [date]: the timetable of the weekday the calendar says it runs (a
  * Saturday on Wednesday's order gets Wednesday's classes); none on holidays and exam days.
  */
-fun classesOn(week: Map<Int, List<ClassSlot>>, date: LocalDate, calendar: AcademicCalendar?): List<ClassSlot> {
-    val wd = if (calendar != null) calendar.timetableDay(date) else date.dayOfWeek.value
-    return wd?.let { week[it] }.orEmpty()
+fun classesOn(week: Map<Int, List<ClassSlot>>, date: LocalDate, calendar: AcademicCalendar?, followCalendar: Boolean = true): List<ClassSlot> {
+    val wd = if (calendar != null) calendar.timetableDay(date, followCalendar) else date.dayOfWeek.value
+    val slots = wd?.let { week[it] }.orEmpty()
+    if (followCalendar && calendar != null && slots.isNotEmpty()) {
+        return slots.filter { slot ->
+            val end = if (slot.isLab) calendar.lastLab ?: calendar.lastTheory else calendar.lastTheory ?: calendar.lastLab
+            end == null || !date.isAfter(end)
+        }
+    }
+    return slots
 }
 
 /** The dates the Week tab shows: Monday to Sunday of this week, or of the coming one on a Sunday. */

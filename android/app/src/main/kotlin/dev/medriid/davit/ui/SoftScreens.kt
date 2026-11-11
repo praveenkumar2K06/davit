@@ -82,7 +82,7 @@ internal fun SoftHome(snapshot: Snapshot, reminders: List<Reminder>, onOpen: (Ro
     val state by repo.state.collectAsState()
     val inks = LocalInks.current
     val now = remember { LocalDateTime.now() }
-    val plan = remember(snapshot) { planFor(weekOf(snapshot), now, snapshot.calendar) }
+    val plan = remember(snapshot, state.followCalendar) { planFor(weekOf(snapshot), now, snapshot.calendar, state.followCalendar) }
     val att = snapshot.attendance
     val overall = overallPercent(att)
 

@@ -46,4 +46,5 @@ internal val SettingsIndex: List<Triple<String, String, SettingsGroup>> = listOf
     Triple("Credits", "thanks licence", SettingsGroup.About),
     Triple("Test background sync", "debug", SettingsGroup.About),
     Triple("Save VTOP pages", "debug parser", SettingsGroup.About),
+    Triple("Export snapshot", "debug export cache json snapshot file", SettingsGroup.About),
 )

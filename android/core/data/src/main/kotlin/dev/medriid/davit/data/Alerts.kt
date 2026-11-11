@@ -204,7 +204,7 @@ fun classReminders(
     val out = ArrayList<ClassReminder>()
     var day = now.toLocalDate()
     while (!day.atStartOfDay().isAfter(end)) {
-        val order = snapshot.calendar?.timetableDay(day) ?: if (snapshot.calendar == null) day.dayOfWeek.value else null
+        val order = snapshot.calendar?.timetableDay(day, true) ?: if (snapshot.calendar == null) day.dayOfWeek.value else null
         for (slot in order?.let { week[it] }.orEmpty()) {
             val start = day.atTime(slot.meeting.start / 60, slot.meeting.start % 60)
             val at = start.minusMinutes(prefs.beforeClass.toLong())

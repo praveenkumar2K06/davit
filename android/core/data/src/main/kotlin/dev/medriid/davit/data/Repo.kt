@@ -60,6 +60,8 @@ data class UiState(
     val appLock: Boolean = false,
     /** Calculate remaining classes till the start of the next exam period instead of full semester. */
     val calcBeforeExam: Boolean = true,
+    /** Stop showing classes and widget warnings after the semester's last instructional day. */
+    val followCalendar: Boolean = true,
     /** What to notify about, and when (thresholds, muted courses, before-class reminders). */
     val alertPrefs: AlertPrefs = AlertPrefs(),
     /** The display card: the top bar on Home. */
@@ -165,6 +167,7 @@ class Repo(private val context: Context) {
             theme = prefs.getInt(K_THEME, 0),
             appLock = prefs.getBoolean(K_LOCK, false),
             calcBeforeExam = prefs.getBoolean(K_CALC_EXAM, true),
+            followCalendar = prefs.getBoolean(K_FOLLOW_CALENDAR, true),
             alertPrefs = AlertPrefs.fromJson(prefs.getString(K_ALERT_PREFS, null)),
             banner = Banner.fromJson(prefs.getString(K_BANNER, null)),
             bannerPhotoAt = bannerPhoto.lastModified(),
@@ -523,6 +526,11 @@ class Repo(private val context: Context) {
     fun setCalcBeforeExam(on: Boolean) {
         prefs.edit { putBoolean(K_CALC_EXAM, on) }
         _state.update { it.copy(calcBeforeExam = on) }
+    }
+
+    fun setFollowCalendar(on: Boolean) {
+        prefs.edit { putBoolean(K_FOLLOW_CALENDAR, on) }
+        _state.update { it.copy(followCalendar = on) }
     }
 
     fun setAlertPrefs(p: AlertPrefs) {
@@ -983,6 +991,7 @@ class Repo(private val context: Context) {
         private const val K_THEME = "theme"
         private const val K_LOCK = "appLock"
         private const val K_CALC_EXAM = "calcBeforeExam"
+        private const val K_FOLLOW_CALENDAR = "followCalendar"
         private const val K_ALERT_PREFS = "alertPrefs"
         private const val K_CAL_GROUP = "calendarGroup:"
         private const val K_CAL_MANUAL = "calendarGroupManual:"

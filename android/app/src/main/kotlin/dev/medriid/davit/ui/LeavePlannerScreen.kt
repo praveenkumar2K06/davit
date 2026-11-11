@@ -91,7 +91,7 @@ internal fun LeavePlannerScreen(route: Route) {
                         Box(Modifier.weight(1f).aspectRatio(1f).padding(2.dp)) {
                             if (n in 1..m.lengthOfMonth()) {
                                 val d = m.atDay(n)
-                                val order = if (cal != null) cal.timetableDay(d) else d.dayOfWeek.value.takeIf { it <= 6 }
+                                val order = if (cal != null) cal.timetableDay(d, state.followCalendar) else d.dayOfWeek.value.takeIf { it <= 6 }
                                 val open = !d.isBefore(today) && !d.isAfter(end) && order != null
                                 val on = d in dates
                                 Box(

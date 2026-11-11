@@ -98,7 +98,7 @@ internal fun FriendsScreen(route: Route) {
             Spacer(Modifier.height(10.dp))
             val people = linkedMapOf("You" to mine).apply { with.forEach { put(it.name, it.classes) } }
             val today = remember { LocalDate.now() }
-            val todayOrder = s?.effectiveCalendar()?.timetableDay(today) ?: today.dayOfWeek.value
+            val todayOrder = s?.effectiveCalendar()?.timetableDay(today, state.followCalendar) ?: today.dayOfWeek.value
             teachingDays(people.values).forEachIndexed { i, day ->
                 val windows = freeTogether(people, day)
                 InkCard(Modifier.fillMaxWidth().padding(bottom = 10.dp).printIn(i), kind = Kind.People, plateOffset = 3.dp) {

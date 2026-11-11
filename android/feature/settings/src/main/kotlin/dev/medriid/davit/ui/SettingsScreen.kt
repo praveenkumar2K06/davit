@@ -117,7 +117,10 @@ fun SettingsScreen(route: Route) {
                     if (state.background) "Every 30 minutes" else "Background sync off",
                     snapshot?.semester?.name?.substringBefore(" - "),
                 ).joinToString(" · ")
-                SettingsGroup.Flags -> if (state.calcBeforeExam) "Calculate before exam on" else "Calculate before exam off"
+                SettingsGroup.Flags -> listOfNotNull(
+                    if (state.followCalendar) "Follow calendar on" else "Follow calendar off",
+                    if (state.calcBeforeExam) "Calculate before exam on" else null,
+                ).joinToString(" · ")
                 SettingsGroup.Phone -> listOfNotNull(
                     if (state.appLock) "App lock on" else null,
                     if (saved.isEmpty()) "no downloads" else "${saved.size} download${if (saved.size == 1) "" else "s"}",

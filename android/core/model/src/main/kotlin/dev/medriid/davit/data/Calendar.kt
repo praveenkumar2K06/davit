@@ -28,10 +28,25 @@ data class AcademicCalendar(
     fun day(date: LocalDate): CalDay? = byDate[date]
 
     /** The weekday (1 = Monday) whose timetable runs on [date], or null when there are no regular classes. */
-    fun timetableDay(date: LocalDate): Int? {
-        val d = byDate[date] ?: return date.dayOfWeek.value
-        if (!d.instructional) return null
-        return d.dayOrder.takeIf { it in 1..7 } ?: date.dayOfWeek.value
+    fun timetableDay(date: LocalDate, followCalendar: Boolean = false): Int? {
+        val d = byDate[date]
+        if (d != null) {
+            if (!d.instructional) return null
+            return d.dayOrder.takeIf { it in 1..7 } ?: date.dayOfWeek.value
+        }
+        if (followCalendar) {
+            val last = listOfNotNull(lastTheory, lastLab).maxOrNull()
+            val first = firstDay ?: days.firstOrNull()?.date
+            if (last != null && date.isAfter(last)) return null
+            if (first != null && date.isBefore(first)) return null
+        }
+        return date.dayOfWeek.value
+    }
+
+    /** True when [date] is strictly past the semester's last instructional day. */
+    fun isSemesterOver(date: LocalDate): Boolean {
+        val end = listOfNotNull(lastTheory, lastLab).maxOrNull() ?: return false
+        return date.isAfter(end)
     }
 
     /** Instructional days from [from] (inclusive) to the last theory day. */

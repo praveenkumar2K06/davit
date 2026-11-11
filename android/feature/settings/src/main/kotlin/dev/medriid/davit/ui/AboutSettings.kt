@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -18,12 +19,17 @@ import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.sync.AutoUpdate
 import dev.medriid.davit.sync.BackgroundSync
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 @Composable
 internal fun AboutSettings() {
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     SettingsCard("Updates") {
         val version = remember { AutoUpdate.current(context) }
         val updates = rememberUpdateAction()
@@ -70,5 +76,26 @@ internal fun AboutSettings() {
             "Keeps the last raw page of each kind on this phone so a broken parser can be fixed. Your username and tokens are scrubbed.",
             state.dumpPages,
         ) { repo.setDumpPages(!state.dumpPages) }
+        var exported by remember { mutableStateOf(false) }
+        SettingRow(
+            "Export snapshot",
+            if (exported) "Exported snapshot JSON file."
+            else if (state.snapshot == null) "No snapshot cached on this phone yet."
+            else "Exports the cached VTOP data structure as a JSON file.",
+            if (exported) "Exported" else "Export",
+        ) {
+            val snapshot = state.snapshot
+            if (snapshot != null) {
+                scope.launch {
+                    val file = withContext(Dispatchers.IO) {
+                        File(context.cacheDir, "exports").apply { mkdirs() }.resolve("snapshot.json").apply {
+                            writeText(snapshot.toJson())
+                        }
+                    }
+                    repo.files.share(file)
+                    exported = true
+                }
+            }
+        }
     }
 }

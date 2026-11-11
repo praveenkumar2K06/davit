@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.AcademicCalendar
 import dev.medriid.davit.data.ClassSlot
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.atRisk
 import dev.medriid.davit.data.classesOn
@@ -67,10 +69,11 @@ import java.util.Locale
 internal fun WeekTab(snapshot: Snapshot) {
     val week = remember(snapshot) { weekOf(snapshot) }
     val calendar = remember(snapshot) { snapshot.effectiveCalendar() }
+    val state by LocalRepo.current.state.collectAsState()
     val now = LocalDateTime.now()
     val todayDate = now.toLocalDate()
-    val dates = remember(snapshot, todayDate) {
-        weekDates(todayDate).filter { it.dayOfWeek != DayOfWeek.SUNDAY || classesOn(week, it, calendar).isNotEmpty() }
+    val dates = remember(snapshot, todayDate, state.followCalendar) {
+        weekDates(todayDate).filter { it.dayOfWeek != DayOfWeek.SUNDAY || classesOn(week, it, calendar, state.followCalendar).isNotEmpty() }
     }
     val today = todayDate.dayOfWeek.value
     val days = dates.map { it.dayOfWeek.value }
@@ -103,7 +106,7 @@ internal fun WeekTab(snapshot: Snapshot) {
         InkText(date.format(DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.ENGLISH)), style = RisoType.body.copy(fontWeight = FontWeight.SemiBold))
         calendar?.dayNote(date)?.let { InkText(it, style = RisoType.small.copy(color = inks.a, fontWeight = FontWeight.SemiBold)) }
         Spacer(Modifier.height(10.dp))
-        val classes = classesOn(week, date, calendar)
+        val classes = classesOn(week, date, calendar, state.followCalendar)
         if (classes.isEmpty()) {
             InkText(if (snapshot.timetable.isEmpty()) "No timetable for ${snapshot.semester.name} yet." else "No classes.")
         }

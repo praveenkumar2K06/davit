@@ -112,8 +112,9 @@ internal fun TodayTab(
     }
     val state by LocalRepo.current.state.collectAsState()
     val week = remember(snapshot) { weekOf(snapshot) }
-    val plan = planFor(week, now, snapshot.calendar)
+    val plan = planFor(week, now, snapshot.calendar, state.followCalendar)
     val calDay = plan.calendarDay
+    val semesterOver = state.followCalendar && snapshot.calendar?.isSemesterOver(now.toLocalDate()) == true
     val att = snapshot.attendance
     val risky = att.count { it.atRisk }
     val overall = overallPercent(att)
@@ -131,12 +132,13 @@ internal fun TodayTab(
             InkText(
                 listOfNotNull(
                     when {
+                        semesterOver -> "Semester has ended"
                         calDay != null && !calDay.instructional -> listOfNotNull(calDay.type, calDay.note).joinToString(" · ")
                         calDay != null && calDay.dayOrder in 1..7 && calDay.dayOrder != now.dayOfWeek.value ->
                             "Follows ${DayOfWeek.of(calDay.dayOrder).getDisplayName(TextStyle.FULL, Locale.ENGLISH)}'s timetable"
                         else -> null
                     },
-                    if (plan.today.isEmpty()) "No classes today" else "${plan.done}/${plan.today.size} done",
+                    if (plan.today.isEmpty()) (if (semesterOver) null else "No classes today") else "${plan.done}/${plan.today.size} done",
                     snapshot.calendar?.instructionalDaysLeft(now.toLocalDate())?.takeIf { it > 0 }?.let { "$it teaching day${if (it == 1) "" else "s"} left" },
                 ).joinToString(" · "),
                 style = RisoType.small,
@@ -179,6 +181,8 @@ internal fun TodayTab(
             }
             if (snapshot.timetable.isEmpty()) {
                 InkText("No timetable for ${snapshot.semester.name} yet, so no Now/Next.", style = RisoType.small, modifier = Modifier.padding(top = 8.dp))
+            } else if (semesterOver && plan.today.isEmpty() && plan.next == null) {
+                InkText("Semester has ended. No more classes scheduled.", style = RisoType.small, modifier = Modifier.padding(top = 8.dp))
             }
         }
 

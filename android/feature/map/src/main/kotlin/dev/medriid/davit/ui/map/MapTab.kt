@@ -703,8 +703,9 @@ private fun RoundButton(label: String, onClick: () -> Unit, content: @Composable
 /** "Next: Calculus · SJT 401, 4th floor · 6 min walk" with a tap to show it. */
 @Composable
 private fun NextClass(scene: Scene, snapshot: Snapshot, onShow: (Pick) -> Unit) {
+    val state by dev.medriid.davit.data.LocalRepo.current.state.collectAsState()
     val now = remember { LocalDateTime.now() }
-    val plan = remember(snapshot) { planFor(weekOf(snapshot), now, snapshot.calendar) }
+    val plan = remember(snapshot, state.followCalendar) { planFor(weekOf(snapshot), now, snapshot.calendar, state.followCalendar) }
     val slot = plan.now ?: plan.next ?: return
     val venue = slot.course.venue.ifBlank { return }
     val spot = remember(venue) { Places.resolve(scene.map, venue) }

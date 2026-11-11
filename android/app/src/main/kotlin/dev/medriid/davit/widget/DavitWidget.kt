@@ -121,10 +121,11 @@ private fun Content(s: UiState, now: LocalDateTime) {
             !s.signedIn -> Text("Sign in to daVIT to see your classes.", style = style(inks.text, 13.sp))
             snap == null -> Text("Waiting for the first sync.", style = style(inks.text, 13.sp))
             else -> {
-                val plan = planFor(weekOf(snap), now, snap.calendar)
+                val plan = planFor(weekOf(snap), now, snap.calendar, s.followCalendar)
                 val slot = plan.now ?: plan.next
                 if (slot == null) {
-                    Text("No classes in your timetable.", style = style(inks.text, 13.sp))
+                    val semesterOver = s.followCalendar && snap.calendar?.isSemesterOver(now.toLocalDate()) == true
+                    Text(if (semesterOver) "Semester has ended." else "No classes in your timetable.", style = style(inks.text, 13.sp))
                 } else {
                     val m = slot.meeting
                     val label = if (plan.now != null) "NOW · until ${clock(m.end)}" else "NEXT · " + when (plan.nextInDays) {

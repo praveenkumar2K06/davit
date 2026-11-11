@@ -88,10 +88,12 @@ private fun Content(s: UiState, now: LocalDateTime) {
         }
         Spacer(GlanceModifier.height(6.dp))
         val snap = s.snapshot
+        val semesterOver = s.followCalendar && snap?.calendar?.isSemesterOver(now.toLocalDate()) == true
         when {
             !s.signedIn -> Text("Sign in to daVIT to see your attendance.", style = style(inks.text, 13.sp))
             snap == null -> Text("Waiting for the first sync.", style = style(inks.text, 13.sp))
             snap.attendanceExempt -> Text("CGPA 9 or above: the 75% rule doesn't apply to you.", style = style(inks.text, 13.sp))
+            semesterOver -> Text("Semester has ended.", style = style(inks.text, 13.sp))
             else -> {
                 val watch = snap.watchList(s.alertPrefs)
                 if (watch.isEmpty()) {

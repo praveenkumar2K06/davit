@@ -4,7 +4,9 @@ import dev.medriid.davit.vtop.AttendanceRow
 import dev.medriid.davit.vtop.Meeting
 import dev.medriid.davit.vtop.TimetableCourse
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -181,5 +183,43 @@ class CalendarTest {
             d = d.plusDays(1)
         }
         assertEquals(1, countAfter)
+    }
+
+    @Test
+    fun snapshotCalendarFollowFlagBehaviors() {
+        val snapshotJson = """
+            {"v": 2, "semester": {"id": "VL20262701", "name": "Fall Semester 2026-27 - VLR"}, "semesters": [{"id": "VL20262701", "name": "Fall Semester 2026-27 - VLR"}], "attendance": [{"code": "BCSE303P", "name": "Operating Systems Lab", "type": "Lab Only", "attended": 11, "total": 15, "pct": 74, "classId": "VL2026270103806", "dSem": "VL20262701", "dReg": "24BKT0043", "dCourse": "VL_BCSE303P_00100", "dType": "LO"}], "timetable": [{"classId": "VL2026270103806", "code": "BCSE303P", "name": "Operating Systems Lab", "type": "Lab Only", "credits": 1, "slot": "L9+L10", "venue": "PRP233", "faculty": "MANOOV R"}], "syncedAt": 1794357248166, "changes": [], "calendar": {"sem": "VL20262701", "first": "2026-07-06", "lastTheory": "2026-11-03", "lastLab": "2026-11-03", "group": "General (Semester)", "days": [["2026-11-02", "Instructional", 1, ""], ["2026-11-03", "Instructional", 2, "Last instructional day for lab and theory classes"], ["2026-11-04", "Holiday", 0, "Deepavali"], ["2026-11-12", "None", 0, ""], ["2026-11-30", "None", 0, ""]]}}
+        """.trimIndent()
+
+        val snap = Snapshot.fromJson(snapshotJson)!!
+        val cal = snap.calendar!!
+
+        assertEquals(LocalDate.of(2026, 11, 3), cal.lastTheory)
+        assertEquals(LocalDate.of(2026, 11, 3), cal.lastLab)
+
+        val postSemesterDate = LocalDate.of(2026, 11, 11)
+        assertTrue(cal.isSemesterOver(postSemesterDate))
+
+        // When followCalendar = true, dates past semester end return null
+        assertNull(cal.timetableDay(LocalDate.of(2026, 12, 1), followCalendar = true))
+        // When followCalendar = false, fallback to weekday (Dec 1, 2026 is Tuesday = 2)
+        assertEquals(2, cal.timetableDay(LocalDate.of(2026, 12, 1), followCalendar = false))
+
+        val nowPostSemester = LocalDateTime.of(2026, 11, 11, 9, 0)
+
+        // Strict plan stops after semester end
+        val strictPlan = planFor(weekOf(snap), nowPostSemester, cal, followCalendar = true)
+        assertTrue(strictPlan.today.isEmpty())
+        assertNull(strictPlan.now)
+        assertNull(strictPlan.next)
+
+        // Unconstrained plan falls back past calendar end
+        val unconstrainedPlan = planFor(weekOf(snap), nowPostSemester, cal, followCalendar = false)
+        assertNotNull(unconstrainedPlan.next)
+        assertEquals("BCSE303P", unconstrainedPlan.next!!.course.courseCode)
+
+        // Remaining classes after semester end is 0
+        val labRow = snap.attendance.first()
+        assertEquals(0, snap.remainingFor(labRow, nowPostSemester))
     }
 }
