@@ -85,7 +85,7 @@ fun RouteLazyScreen(
                 Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = Gutter, end = Gutter, top = 4.dp, bottom = 28.dp),
             ) {
-                item(key = "head") {
+                item(key = "head", contentType = "header") {
                     RouteHead(title, subtitle)
                     Spacer(Modifier.height(12.dp))
                 }

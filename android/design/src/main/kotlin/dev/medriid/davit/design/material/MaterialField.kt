@@ -35,7 +35,7 @@ import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.SearchGlyph
 
 @Composable
-internal fun MaterialField(
+fun MaterialField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,

@@ -100,6 +100,19 @@ internal fun TodayTab(
         SoftHome(snapshot, reminders, onOpen, onOpenWeek, onOpenAttendance)
         return
     }
+    if (LocalInks.current.material) {
+        MaterialHome(
+            snapshot = snapshot,
+            reminders = reminders,
+            onOpen = onOpen,
+            onOpenAttendance = onOpenAttendance,
+            onOpenWeek = onOpenWeek,
+            onOpenAcademics = onOpenAcademics,
+            onAddReminder = onAddReminder,
+            onRemoveReminder = onRemoveReminder,
+        )
+        return
+    }
     var adding by rememberSaveable { mutableStateOf(false) }
     var now by remember { mutableStateOf(LocalDateTime.now()) }
     LaunchedEffect(Unit) {

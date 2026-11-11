@@ -28,8 +28,14 @@ import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 
+import dev.medriid.davit.ui.material3.MaterialLookSettings
+
 @Composable
 internal fun LookSettings() {
+    if (LocalInks.current.material) {
+        MaterialLookSettings()
+        return
+    }
     val repo = LocalRepo.current
     val nav = LocalNav.current
     val state by repo.state.collectAsState()

@@ -16,9 +16,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.design.InkText
+import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.sync.AutoUpdate
 import dev.medriid.davit.sync.BackgroundSync
+import dev.medriid.davit.ui.material3.MaterialAboutSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,6 +28,10 @@ import java.io.File
 
 @Composable
 internal fun AboutSettings() {
+    if (LocalInks.current.material) {
+        MaterialAboutSettings()
+        return
+    }
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val context = LocalContext.current

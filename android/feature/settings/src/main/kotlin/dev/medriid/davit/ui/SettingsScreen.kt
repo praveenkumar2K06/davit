@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedListItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,6 +39,7 @@ import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.sync.AutoUpdate
 import dev.medriid.davit.sync.Notifier
+import dev.medriid.davit.ui.material3.MaterialSettingsScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,6 +50,11 @@ import kotlinx.coroutines.withContext
  */
 @Composable
 fun SettingsScreen(route: Route) {
+    if (LocalInks.current.material) {
+        MaterialSettingsScreen(route)
+        return
+    }
+
     val repo = LocalRepo.current
     val nav = LocalNav.current
     val state by repo.state.collectAsState()
@@ -219,24 +222,6 @@ internal fun open(nav: Nav, g: SettingsGroup) = nav.go(if (g == SettingsGroup.Al
 @Composable
 private fun GroupRow(g: SettingsGroup, summary: String, onClick: () -> Unit) {
     val inks = LocalInks.current
-    if (inks.style == AppStyle.Material3) {
-        SegmentedListItem(
-            colors = ListItemDefaults.segmentedColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            shapes = ListItemDefaults.segmentedShapes(index = g.ordinal, count = SettingsGroup.entries.size),
-            leadingContent = { IconGlyph(g.icon, inks.text, Modifier.size(22.dp)) },
-            content = { InkText(g.title, style = RisoType.body.copy(fontWeight = FontWeight.SemiBold)) },
-            supportingContent = { InkText(summary.replaceFirstChar { it.uppercase() }, style = RisoType.small, maxLines = 2) },
-            onClick = onClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 2.dp)
-                .semantics { contentDescription = "${g.title}: $summary" }
-        )
-        return
-    }
-
     Row(
         Modifier
             .fillMaxWidth()
@@ -256,3 +241,4 @@ private fun GroupRow(g: SettingsGroup, summary: String, onClick: () -> Unit) {
     }
     Hairline()
 }
+

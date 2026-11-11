@@ -4,10 +4,12 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -19,22 +21,31 @@ import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.RisoTheme
 
 @Composable
-internal fun MaterialButton(
+fun MaterialButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     quiet: Boolean = false,
     fillWidth: Boolean = false,
+    compact: Boolean = false,
 ) {
+    val contentPadding = if (compact) {
+        PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+    } else {
+        ButtonDefaults.ContentPadding
+    }
+    val minHeight = if (compact) 32.dp else if (fillWidth) 50.dp else 40.dp
     val mModifier = modifier
         .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier)
-        .defaultMinSize(minHeight = 54.dp)
+        .defaultMinSize(minHeight = minHeight)
+
     if (quiet) {
         OutlinedButton(
             onClick = onClick,
             modifier = mModifier,
             enabled = enabled,
+            contentPadding = contentPadding,
         ) {
             Text(text)
         }
@@ -43,6 +54,7 @@ internal fun MaterialButton(
             onClick = onClick,
             modifier = mModifier,
             enabled = enabled,
+            contentPadding = contentPadding,
         ) {
             Text(text)
         }
@@ -66,7 +78,7 @@ private fun MaterialButtonPreview() {
                 fillWidth = true
             )
 
-            // Standard Filled Button (Disabled)odifier = Modifier.padding(16.dp)) {
+            // Standard Filled Button (Disabled)
             MaterialButton(
                 text = "Filled Disabled",
                 onClick = {},
@@ -89,6 +101,13 @@ private fun MaterialButtonPreview() {
                 enabled = false,
                 quiet = true,
                 fillWidth = true
+            )
+
+            // Compact Button
+            MaterialButton(
+                text = "Compact Button",
+                onClick = {},
+                compact = true
             )
         }
     }

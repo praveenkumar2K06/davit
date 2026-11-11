@@ -31,8 +31,15 @@ import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.sync.BackgroundSync
 
+import dev.medriid.davit.design.LocalInks
+import dev.medriid.davit.ui.material3.MaterialSyncSettings
+
 @Composable
 internal fun SyncSettings() {
+    if (LocalInks.current.material) {
+        MaterialSyncSettings()
+        return
+    }
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val context = LocalContext.current

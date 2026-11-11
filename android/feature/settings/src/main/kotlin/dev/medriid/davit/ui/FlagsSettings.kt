@@ -8,9 +8,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.data.LocalRepo
+import dev.medriid.davit.design.LocalInks
+import dev.medriid.davit.ui.material3.MaterialFlagsSettings
 
 @Composable
 internal fun FlagsSettings() {
+    if (LocalInks.current.material) {
+        MaterialFlagsSettings()
+        return
+    }
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     SettingsCard("Attendance & Schedule") {

@@ -27,7 +27,7 @@ import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 
 @Composable
-internal fun MaterialChip(
+fun MaterialChip(
     text: String,
     modifier: Modifier = Modifier,
     solid: Boolean = false,

@@ -1,11 +1,5 @@
 package dev.medriid.davit.ui
 
-import dev.medriid.davit.design.ErrorNote
-import dev.medriid.davit.design.Gutter
-import dev.medriid.davit.design.Loading
-
-import dev.medriid.davit.data.LocalRepo
-
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -41,7 +35,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -77,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.data.CachedCourse
 import dev.medriid.davit.data.FilterOption
+import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.data.MaterialFilter
 import dev.medriid.davit.data.MaterialResults
 import dev.medriid.davit.data.MaterialRow
@@ -85,10 +79,11 @@ import dev.medriid.davit.data.Section
 import dev.medriid.davit.data.Snapshot
 import dev.medriid.davit.data.courseName
 import dev.medriid.davit.data.searchMaterials
-import dev.medriid.davit.design.AppStyle
-import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.CardShape
+import dev.medriid.davit.design.ChoiceRow
 import dev.medriid.davit.design.EditorialShape
+import dev.medriid.davit.design.ErrorNote
+import dev.medriid.davit.design.Gutter
 import dev.medriid.davit.design.Heading
 import dev.medriid.davit.design.InkButton
 import dev.medriid.davit.design.InkCard
@@ -96,8 +91,8 @@ import dev.medriid.davit.design.InkChip
 import dev.medriid.davit.design.InkField
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.Inks
+import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.LocalInks
-import dev.medriid.davit.design.MaterialShape
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
 import dev.medriid.davit.design.SearchGlyph
@@ -105,6 +100,8 @@ import dev.medriid.davit.design.printIn
 import dev.medriid.davit.design.rememberHaptics
 import dev.medriid.davit.design.rememberMotionEnabled
 import dev.medriid.davit.search.Fuzzy
+import dev.medriid.davit.ui.material3.MaterialCourseScreen
+import dev.medriid.davit.ui.material3.MaterialMaterialsSegment
 import dev.medriid.davit.vtop.CourseOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -117,6 +114,10 @@ import kotlin.time.Duration.Companion.milliseconds
 /** Your course pages, this semester first: what's there, how much is your faculty's, what's saved. */
 @Composable
 fun MaterialsSegment(snapshot: Snapshot) {
+    if (LocalInks.current.material) {
+        MaterialMaterialsSegment(snapshot)
+        return
+    }
     val repo = LocalRepo.current
     val nav = LocalNav.current
     val campus by repo.campus.state.collectAsState()
@@ -182,27 +183,6 @@ private fun CourseCard(c: CourseOption, name: String, cached: CachedCourse?, min
 private fun SearchLauncher(modifier: Modifier, onClick: () -> Unit) {
     val inks = LocalInks.current
 
-    if (inks.style == AppStyle.Material3) {
-        Row(
-            modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 54.dp)
-                .clip(MaterialShape)
-                .background(TextFieldDefaults.colors().unfocusedContainerColor)
-                .clickable(role = Role.Button, onClick = onClick)
-                .padding(horizontal = 14.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SearchGlyph()
-            Spacer(Modifier.width(10.dp))
-            InkText(
-                "Search every course's materials",
-                style = RisoType.body.copy(color = TextFieldDefaults.colors().unfocusedLabelColor)
-            )
-        }
-        return
-    }
-
     Row(
         modifier
             .fillMaxWidth()
@@ -228,6 +208,10 @@ private fun SearchLauncher(modifier: Modifier, onClick: () -> Unit) {
  */
 @Composable
 fun CourseScreen(route: Route.Course) {
+    if (LocalInks.current.material) {
+        MaterialCourseScreen(route)
+        return
+    }
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val campus by repo.campus.state.collectAsState()
@@ -246,46 +230,64 @@ fun CourseScreen(route: Route.Course) {
     val rows = remember(cached, snapshot) { cached?.let { repo.materials.rows(it, snapshot) }.orEmpty() }
     var filter by rememberSaveable { mutableIntStateOf(0) }
     var othersOpen by rememberSaveable { mutableStateOf(false) }
-    val faculty = remember(course, snapshot) { snapshot?.timetable.orEmpty().filter { it.courseCode == course.code }.map { it.faculty }.filter { it.isNotBlank() }.distinct() }
-    val shown = when (filter) {
-        1 -> rows.filter { it.mine }
-        2 -> rows.filter { it.key in saved }
-        else -> rows
+    val faculty = remember(course, snapshot) {
+        snapshot?.timetable.orEmpty()
+            .mapNotNull { if (it.courseCode == course.code && it.faculty.isNotBlank()) it.faculty else null }
+            .distinct()
     }
-    val mine = shown.filter { it.mine }
-    val others = shown.filterNot { it.mine }
+    val (mine, others) = remember(rows, filter, saved) {
+        val s = when (filter) {
+            1 -> rows.filter { it.mine }
+            2 -> rows.filter { it.key in saved }
+            else -> rows
+        }
+        s.filter { it.mine } to s.filterNot { it.mine }
+    }
+    val mineCount = remember(rows) { rows.count { it.mine } }
+    val savedCount = remember(rows, saved) { rows.count { it.key in saved } }
+    val savedHere = remember(rows, saved) { rows.filter { it.key in saved } }
+    val mineModuleGroups = remember(mine) {
+        mine.groupBy { it.material.module }
+            .entries
+            .sortedWith(compareBy({ it.key.isEmpty() }, { it.key.toIntOrNull() ?: Int.MAX_VALUE }))
+    }
+    val othersModuleGroups = remember(others) {
+        others.groupBy { it.material.module }
+            .entries
+            .sortedWith(compareBy({ it.key.isEmpty() }, { it.key.toIntOrNull() ?: Int.MAX_VALUE }))
+    }
 
     RouteLazyScreen(
         route, course.code, "${state.aliases.courseName(course.code, course.name)} · ${course.typeName.ifBlank { course.type }}",
         refreshing = route.key in loading && cached != null,
         onRefresh = { repo.materials.load(course, force = true) },
     ) {
-        item(key = "top") {
+        item(key = "top", contentType = "top") {
             Column {
                 cached?.let { Freshness(it.at) }
                 errors[route.key]?.let { ErrorNote(it) { repo.materials.load(course, force = true) } }
                 if (cached != null) {
-                    ChoiceRow(listOf("All ${rows.size}", "Your faculty ${rows.count { it.mine }}", "Saved ${rows.count { it.key in saved }}"), filter) { filter = it }
+                    ChoiceRow(listOf("All ${rows.size}", "Your faculty $mineCount", "Saved $savedCount"), filter) { filter = it }
                     Spacer(Modifier.height(6.dp))
                 }
             }
         }
         if (cached == null) {
-            item(key = "loading") { Loading(if (route.key in loading) "Reading the course page (big ones take a few seconds)" else "Not fetched yet. Pull down to fetch.") }
+            item(key = "loading", contentType = "loading") { Loading(if (route.key in loading) "Reading the course page (big ones take a few seconds)" else "Not fetched yet. Pull down to fetch.") }
             return@RouteLazyScreen
         }
         if (rows.isEmpty()) {
-            item(key = "none") { InkText("Nobody has uploaded anything here yet.", modifier = Modifier.padding(top = 10.dp)) }
+            item(key = "none", contentType = "empty") { InkText("Nobody has uploaded anything here yet.", modifier = Modifier.padding(top = 10.dp)) }
         }
         if (mine.isNotEmpty() || (filter != 2 && faculty.isNotEmpty())) {
-            item(key = "mine-head") {
+            item(key = "mine-head", contentType = "header") {
                 GroupLabel("Your faculty" + if (faculty.isNotEmpty()) " · " + faculty.joinToString(", ") { titleCase(it) } else "")
             }
-            if (mine.isEmpty()) item(key = "mine-none") { InkText("Nothing from your faculty on this page yet.", style = RisoType.small) }
-            byModule("mine", mine, cached.page.modules)
+            if (mine.isEmpty()) item(key = "mine-none", contentType = "empty") { InkText("Nothing from your faculty on this page yet.", style = RisoType.small) }
+            byModule("mine", mineModuleGroups, cached.page.modules)
         }
         if (others.isNotEmpty()) {
-            item(key = "others-head") {
+            item(key = "others-head", contentType = "header") {
                 Row(
                     Modifier.fillMaxWidth().clickable(role = Role.Button) { othersOpen = !othersOpen }.padding(top = 14.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -294,11 +296,10 @@ fun CourseScreen(route: Route.Course) {
                     InkChip(if (othersOpen || mine.isEmpty()) "${others.size}" else "Show ${others.size}", solid = !othersOpen && mine.isNotEmpty())
                 }
             }
-            if (othersOpen || mine.isEmpty()) byModule("others", others, cached.page.modules)
+            if (othersOpen || mine.isEmpty()) byModule("others", othersModuleGroups, cached.page.modules)
         }
-        val savedHere = rows.filter { it.key in saved }
         if (savedHere.isNotEmpty()) {
-            item(key = "clear") {
+            item(key = "clear", contentType = "clear") {
                 Column(Modifier.padding(top = 20.dp)) {
                     Rule()
                     Spacer(Modifier.height(10.dp))
@@ -322,10 +323,13 @@ fun CourseScreen(route: Route.Course) {
 private val shortDay = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
 
 /** Rows grouped under "Module 2 · Energy Devices" headings, module order, then the rest. */
-private fun LazyListScope.byModule(prefix: String, rows: List<MaterialRow>, modules: Map<String, String>) {
-    val groups = rows.groupBy { it.material.module }.entries.sortedWith(compareBy({ it.key.isEmpty() }, { it.key.toIntOrNull() ?: Int.MAX_VALUE }))
+private fun LazyListScope.byModule(
+    prefix: String,
+    groups: List<Map.Entry<String, List<MaterialRow>>>,
+    modules: Map<String, String>,
+) {
     groups.forEach { (module, list) ->
-        item(key = "$prefix-m-$module") {
+        item(key = "$prefix-m-$module", contentType = "module_header") {
             val name = modules[module]
             InkText(
                 if (module.isEmpty()) "Other" else "Module $module" + (name?.let { " · $it" } ?: ""),
@@ -335,7 +339,7 @@ private fun LazyListScope.byModule(prefix: String, rows: List<MaterialRow>, modu
             )
         }
         list.forEachIndexed { i, r ->
-            item(key = "$prefix-f-${r.material.fileId}") {
+            item(key = "$prefix-f-${r.material.fileId}", contentType = "file_row") {
                 Column(Modifier.printIn(i)) {
                     FileRow(r.key, r.material.title, materialLine(r), fetch = { c, out, p -> c.downloadMaterial(r.material.fileId, out, p) })
                     Hairline()
@@ -345,7 +349,7 @@ private fun LazyListScope.byModule(prefix: String, rows: List<MaterialRow>, modu
     }
 }
 
-private fun materialLine(r: MaterialRow): String = listOfNotNull(
+internal fun materialLine(r: MaterialRow): String = listOfNotNull(
     r.material.kind.ifBlank { null },
     titleCase(r.material.uploader).ifBlank { null },
     r.day?.format(shortDay) ?: r.material.date.ifBlank { null },

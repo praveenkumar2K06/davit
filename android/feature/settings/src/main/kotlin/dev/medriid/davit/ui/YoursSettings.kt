@@ -12,15 +12,24 @@ import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoType
 
+import dev.medriid.davit.ui.material3.MaterialYoursSettings
+
 @Composable
 internal fun YoursSettings() {
+    if (LocalInks.current.material) {
+        MaterialYoursSettings()
+        return
+    }
     val repo = LocalRepo.current
     val nav = LocalNav.current
     val state by repo.state.collectAsState()
+    val inks = LocalInks.current
     SettingsCard("On Home") {
         SettingRow(
             "Display card",
-            if (LocalInks.current.editorial) "The picture at the top of Home: a print or your own photo." else "The top bar on a print or your own photo, with two stats you pick.",
+            if (inks.editorial) "The picture at the top of Home: a print or your own photo."
+            else if (inks.material) "The banner at the top of Home: a print or your own photo, with stats you pick."
+            else "The top bar on a print or your own photo, with two stats you pick.",
             "Change",
         ) { nav.go(Route.DisplayCard) }
         SettingRow(

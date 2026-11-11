@@ -30,13 +30,19 @@ import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 
-private fun canLockApp(activity: ComponentActivity): Boolean {
+import dev.medriid.davit.ui.material3.MaterialPhoneSettings
+
+internal fun canLockApp(activity: ComponentActivity): Boolean {
     val bm = BiometricManager.from(activity)
     return bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL) == BiometricManager.BIOMETRIC_SUCCESS
 }
 
 @Composable
 internal fun PhoneSettings() {
+    if (LocalInks.current.material) {
+        MaterialPhoneSettings()
+        return
+    }
     val repo = LocalRepo.current
     val nav = LocalNav.current
     val state by repo.state.collectAsState()
@@ -81,7 +87,7 @@ internal fun PhoneSettings() {
  * turn it on), kept up to date after each sync; or the semester as a file for other apps.
  */
 @Composable
-private fun ClassesInCalendar(state: UiState) {
+internal fun ClassesInCalendar(state: UiState) {
     val repo = LocalRepo.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()

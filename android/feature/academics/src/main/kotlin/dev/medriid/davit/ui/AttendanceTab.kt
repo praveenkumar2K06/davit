@@ -74,6 +74,10 @@ import androidx.compose.ui.draw.clip
 /** Every course, sorted by risk. Tap a card for a what-if. */
 @Composable
 fun AttendanceTab(snapshot: Snapshot) {
+    if (LocalInks.current.material) {
+        MaterialAttendanceTab(snapshot)
+        return
+    }
     val rows = snapshot.attendance
     val risky = rows.count { it.atRisk }
     TabColumn {

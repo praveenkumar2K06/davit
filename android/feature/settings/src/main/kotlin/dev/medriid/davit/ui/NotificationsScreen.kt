@@ -27,12 +27,19 @@ import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.sync.Notifier
 
+import dev.medriid.davit.design.LocalInks
+import dev.medriid.davit.ui.material3.MaterialNotificationsScreen
+
 /**
  * What to notify about: attendance lines, skips, muted courses, reminders before class,
  * and each other kind of alert on its own switch.
  */
 @Composable
 fun NotificationsScreen(route: Route) {
+    if (LocalInks.current.material) {
+        MaterialNotificationsScreen(route)
+        return
+    }
     val repo = LocalRepo.current
     val state by repo.state.collectAsState()
     val context = LocalContext.current

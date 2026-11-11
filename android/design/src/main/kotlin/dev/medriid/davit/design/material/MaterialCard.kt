@@ -14,25 +14,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.RisoTheme
 
-internal val MaterialShape = RoundedCornerShape(16.dp)
+val MaterialShape = RoundedCornerShape(16.dp)
 
 @Composable
-internal fun MaterialCard(
+fun MaterialCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    containerColor: Color? = null,
+    shape: Shape = MaterialShape,
     contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val fill = containerColor ?: MaterialTheme.colorScheme.surfaceVariant
     if (onClick != null) {
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                containerColor = fill,
             ),
+            shape = shape,
             onClick = onClick,
             modifier = modifier,
         ) {
@@ -41,8 +47,9 @@ internal fun MaterialCard(
     } else {
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                containerColor = fill,
             ),
+            shape = shape,
             modifier = modifier,
         ) {
             Column(Modifier.padding(contentPadding)) { content() }

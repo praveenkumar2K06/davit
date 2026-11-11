@@ -4,7 +4,6 @@ import dev.medriid.davit.data.LocalRepo
 import dev.medriid.davit.vtop.Person
 import dev.medriid.davit.data.showOnMap
 import dev.medriid.davit.data.titleCase
-import dev.medriid.davit.design.ErrorNote
 import dev.medriid.davit.design.Gutter
 import dev.medriid.davit.design.Loading
 import dev.medriid.davit.design.highlight
@@ -30,6 +29,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -93,6 +93,10 @@ import kotlin.math.floor
 /** Marks, assignments, exams, grades, materials and faculty for the selected semester, one segment at a time. */
 @Composable
 fun AcademicsTab(snapshot: Snapshot) {
+    if (LocalInks.current.material) {
+        MaterialAcademicsTab(snapshot)
+        return
+    }
     var segment by rememberSaveable { mutableIntStateOf(0) }
     // A shortcut on Home can ask for a section.
     val repo = LocalRepo.current
@@ -206,7 +210,6 @@ internal fun Assignment.dueDay(): LocalDate? = vtopDate(due)
 @Composable
 private fun AssignmentsSegment(snapshot: Snapshot) {
     val courses = snapshot.assignments.filter { it.items.isNotEmpty() }
-    // Photograph pages into one PDF, then pick which assignment it goes to.
     val repo = LocalRepo.current
     InkButton("Scan to PDF", { repo.scanner.open(dev.medriid.davit.scan.ScanTarget()) }, quiet = true, fillWidth = true, modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp))
     if (courses.isEmpty()) {
@@ -409,7 +412,7 @@ private fun FacultySegment(snapshot: Snapshot) {
     val hits = remember(query, index) { if (query.isBlank()) null else index.search(query) }
     val shown = hits?.map { it.item } ?: courses
 
-    InkField(query, { query = it }, "Course, code or any teacher", search = true , modifier = Modifier.fillMaxWidth())
+    InkField(query, { query = it }, "Course, code or any teacher", search = true, modifier = Modifier.fillMaxWidth())
     Spacer(Modifier.height(14.dp))
     if (courses.isEmpty()) {
         InkText("No timetable for ${snapshot.semester.name} yet. Type three letters of any teacher's name to look them up on VTOP.", style = RisoType.small)
@@ -431,7 +434,7 @@ private fun FacultySegment(snapshot: Snapshot) {
                         val who = same.first().faculty
                         val f = details[facultyKey(who)]
                         Spacer(Modifier.height(10.dp))
-                        Hairline()
+                        Rule()
                         Spacer(Modifier.height(8.dp))
                         InkText(
                             same.joinToString(" + ") { if (isLabType(it.courseType)) "Lab" else if ("theory" in it.courseType.lowercase() || it.courseType.isBlank()) "Theory" else it.courseType } +
@@ -655,7 +658,7 @@ private val AcademicsSegments = listOf(
 private fun SegmentBar(items: List<Pair<String, RisoIcon>>, selected: Int, onSelect: (Int) -> Unit) {
     val inks = LocalInks.current
     val motion = dev.medriid.davit.design.rememberMotionEnabled()
-    val pill = androidx.compose.foundation.shape.RoundedCornerShape(50)
+    val pill = RoundedCornerShape(50)
     Row(
         Modifier.fillMaxWidth().height(50.dp).padding(end = 3.dp, bottom = 3.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
