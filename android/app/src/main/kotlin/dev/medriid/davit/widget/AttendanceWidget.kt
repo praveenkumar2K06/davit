@@ -1,14 +1,13 @@
 package dev.medriid.davit.widget
 
 import android.content.Context
-import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
-import androidx.glance.LocalContext
+import androidx.glance.GlanceTheme
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
@@ -19,6 +18,7 @@ import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -42,6 +42,7 @@ import java.time.LocalDateTime
 /**
  * Home-screen widget: the courses at or near the line (your own warning line, or a couple
  * of skips from it), worst first, each with what it takes. As many as fit.
+ * Enhanced with Material You dynamic theming and Material 3 container hierarchy.
  */
 class AttendanceWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
@@ -70,53 +71,108 @@ class AttendanceWidgetReceiver : GlanceAppWidgetReceiver() {
 
 @Composable
 private fun Content(s: UiState, now: LocalDateTime) {
-    val context = LocalContext.current
-    val systemNight = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-    val inks = s.palette.inks(s.theme == 2 || (s.theme == 0 && systemNight))
-    Column(
-        GlanceModifier
-            .fillMaxSize()
-            .cornerRadius(22.dp)
-            .background(inks.paper)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .clickable(actionStartActivity<MainActivity>()),
-    ) {
-        Row(GlanceModifier.fillMaxWidth()) {
-            Text("Attendance", style = style(inks.b, 14.sp, bold = true))
-            Spacer(GlanceModifier.defaultWeight())
-            s.snapshot?.let { Text(ago(it.syncedAt), style = style(inks.text.copy(alpha = 0.7f), 11.sp)) }
-        }
-        Spacer(GlanceModifier.height(6.dp))
-        val snap = s.snapshot
-        val semesterOver = s.followCalendar && snap?.calendar?.isSemesterOver(now.toLocalDate()) == true
-        when {
-            !s.signedIn -> Text("Sign in to daVIT to see your attendance.", style = style(inks.text, 13.sp))
-            snap == null -> Text("Waiting for the first sync.", style = style(inks.text, 13.sp))
-            snap.attendanceExempt -> Text("CGPA 9 or above: the 75% rule doesn't apply to you.", style = style(inks.text, 13.sp))
-            semesterOver -> Text("Semester has ended.", style = style(inks.text, 13.sp))
-            else -> {
-                val watch = snap.watchList(s.alertPrefs)
-                if (watch.isEmpty()) {
-                    val lowest = snap.attendance.minByOrNull { it.percent }
-                    Text("All clear of ${s.alertPrefs.warnBelow}%.", style = style(inks.b, 14.sp, bold = true))
-                    lowest?.let { Text("Lowest: ${it.courseName} at ${it.percent}%", style = style(inks.text, 12.sp), maxLines = 1) }
-                } else {
-                    // About 40 dp per course after the header.
-                    val fits = ((LocalSize.current.height.value - 44f) / 40f).toInt().coerceAtLeast(1)
-                    watch.take(fits).forEach { row ->
-                        Row(GlanceModifier.fillMaxWidth().padding(bottom = 4.dp)) {
-                            Text("${row.percent}%", style = style(if (row.atRisk) inks.a else inks.b, 15.sp, bold = true))
-                            Spacer(GlanceModifier.width(8.dp))
-                            Column(GlanceModifier.defaultWeight()) {
-                                Text(
-                                    row.courseName + if (isLabType(row.classType)) " · Lab" else "",
-                                    style = style(inks.text, 12.sp, bold = true), maxLines = 1,
-                                )
-                                Text(row.hint(snap.remainingFor(row, now)), style = style(inks.text, 11.sp), maxLines = 1)
+    DavitWidgetTheme(s) {
+        Column(
+            GlanceModifier
+                .fillMaxSize()
+                .cornerRadius(24.dp)
+                .background(GlanceTheme.colors.widgetBackground)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .clickable(actionStartActivity<MainActivity>()),
+        ) {
+            Row(
+                GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Attendance", style = style(GlanceTheme.colors.primary, 14.sp, bold = true))
+                Spacer(GlanceModifier.defaultWeight())
+                s.snapshot?.let { snap ->
+                    Row(
+                        GlanceModifier
+                            .cornerRadius(12.dp)
+                            .background(GlanceTheme.colors.tertiaryContainer)
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
+                    ) {
+                        Text(ago(snap.syncedAt), style = style(GlanceTheme.colors.onTertiaryContainer, 11.sp))
+                    }
+                }
+            }
+            Spacer(GlanceModifier.height(8.dp))
+            val snap = s.snapshot
+            val semesterOver = s.followCalendar && snap?.calendar?.isSemesterOver(now.toLocalDate()) == true
+            when {
+                !s.signedIn -> WidgetInfoCard(
+                    title = "Sign in to daVIT",
+                    subtitle = "Open the app to connect your account and view your attendance.",
+                )
+                snap == null -> WidgetInfoCard(
+                    title = "Waiting for First Sync",
+                    subtitle = "Syncing your attendance data...",
+                )
+                snap.attendanceExempt -> WidgetInfoCard(
+                    title = "Attendance Exempt (CGPA 9+)",
+                    subtitle = "The 75% attendance requirement does not apply to you.",
+                    containerColor = GlanceTheme.colors.secondaryContainer,
+                    contentColor = GlanceTheme.colors.onSecondaryContainer,
+                )
+                semesterOver -> WidgetInfoCard(
+                    title = "Semester Ended",
+                    subtitle = "No more instructional days scheduled for this semester.",
+                )
+                else -> {
+                    val watch = snap.watchList(s.alertPrefs)
+                    if (watch.isEmpty()) {
+                        val lowest = snap.attendance.minByOrNull { it.percent }
+                        Column(
+                            GlanceModifier
+                                .fillMaxWidth()
+                                .cornerRadius(16.dp)
+                                .background(GlanceTheme.colors.primaryContainer)
+                                .padding(12.dp),
+                        ) {
+                            Text("All clear of ${s.alertPrefs.warnBelow}%.", style = style(GlanceTheme.colors.onPrimaryContainer, 14.sp, bold = true))
+                            lowest?.let {
+                                Text("Lowest: ${it.courseName} at ${it.percent}%", style = style(GlanceTheme.colors.onPrimaryContainer, 12.sp), maxLines = 1)
                             }
                         }
+                    } else {
+                        val fits = ((LocalSize.current.height.value - 44f) / 44f).toInt().coerceAtLeast(1)
+                        watch.take(fits).forEach { row ->
+                            Row(
+                                GlanceModifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 6.dp)
+                                    .cornerRadius(12.dp)
+                                    .background(GlanceTheme.colors.surfaceVariant)
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Row(
+                                    GlanceModifier
+                                        .cornerRadius(8.dp)
+                                        .background(if (row.atRisk) GlanceTheme.colors.errorContainer else GlanceTheme.colors.secondaryContainer)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                ) {
+                                    Text(
+                                        "${row.percent}%",
+                                        style = style(if (row.atRisk) GlanceTheme.colors.onErrorContainer else GlanceTheme.colors.onSecondaryContainer, 13.sp, bold = true),
+                                    )
+                                }
+                                Spacer(GlanceModifier.width(8.dp))
+                                Column(GlanceModifier.defaultWeight()) {
+                                    Text(
+                                        row.courseName + if (isLabType(row.classType)) " · Lab" else "",
+                                        style = style(GlanceTheme.colors.onSurface, 12.sp, bold = true),
+                                        maxLines = 1,
+                                    )
+                                    Text(row.hint(snap.remainingFor(row, now)), style = style(GlanceTheme.colors.onSurfaceVariant, 11.sp), maxLines = 1)
+                                }
+                            }
+                        }
+                        if (watch.size > fits) {
+                            Text("+${watch.size - fits} more", style = style(GlanceTheme.colors.onSurfaceVariant, 11.sp))
+                        }
                     }
-                    if (watch.size > fits) Text("+${watch.size - fits} more", style = style(inks.text.copy(alpha = 0.7f), 11.sp))
                 }
             }
         }

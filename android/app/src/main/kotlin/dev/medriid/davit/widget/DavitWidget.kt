@@ -1,17 +1,16 @@
 package dev.medriid.davit.widget
 
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.LocalContext
+import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -24,6 +23,7 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.setWidgetPreviews
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
+import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -57,7 +57,7 @@ import java.time.format.TextStyle as JavaTextStyle
 
 /**
  * Home-screen widget: the class on now (or next), its attendance, and the nearest thing
- * due. Paper and ink from your ink pair. Redrawn after every sync and every 30 minutes.
+ * due. Enhanced with Material You dynamic theming and Material 3 container hierarchy.
  */
 class DavitWidget : GlanceAppWidget() {
     override val previewSizeMode: PreviewSizeMode = SizeMode.Responsive(
@@ -99,57 +99,132 @@ class DavitWidgetReceiver : GlanceAppWidgetReceiver() {
 
 @Composable
 private fun Content(s: UiState, now: LocalDateTime) {
-    val context = LocalContext.current
-    val systemNight = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-    val inks = s.palette.inks(s.theme == 2 || (s.theme == 0 && systemNight))
-    Column(
-        GlanceModifier
-            .fillMaxSize()
-            .cornerRadius(22.dp)
-            .background(inks.paper)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .clickable(actionStartActivity<MainActivity>()),
-    ) {
-        Row(GlanceModifier.fillMaxWidth()) {
-            Text("daVIT", style = style(inks.b, 14.sp, bold = true))
-            Spacer(GlanceModifier.defaultWeight())
-            s.snapshot?.let { Text(ago(it.syncedAt), style = style(inks.text.copy(alpha = 0.7f), 11.sp)) }
-        }
-        Spacer(GlanceModifier.height(6.dp))
-        val snap = s.snapshot
-        when {
-            !s.signedIn -> Text("Sign in to daVIT to see your classes.", style = style(inks.text, 13.sp))
-            snap == null -> Text("Waiting for the first sync.", style = style(inks.text, 13.sp))
-            else -> {
-                val plan = planFor(weekOf(snap), now, snap.calendar, s.followCalendar)
-                val slot = plan.now ?: plan.next
-                if (slot == null) {
-                    val semesterOver = s.followCalendar && snap.calendar?.isSemesterOver(now.toLocalDate()) == true
-                    Text(if (semesterOver) "Semester has ended." else "No classes in your timetable.", style = style(inks.text, 13.sp))
-                } else {
-                    val m = slot.meeting
-                    val label = if (plan.now != null) "NOW · until ${clock(m.end)}" else "NEXT · " + when (plan.nextInDays) {
-                        0 -> clock(m.start)
-                        1 -> "tomorrow ${clock(m.start)}"
-                        else -> (plan.nextDate?.dayOfWeek ?: DayOfWeek.of(m.day)).getDisplayName(JavaTextStyle.SHORT, Locale.ENGLISH) + " " + clock(m.start)
-                    }
-                    Text(label, style = style(inks.a, 11.sp, bold = true))
-                    Text(slot.course.courseName, style = style(inks.text, 16.sp, bold = true), maxLines = 1)
-                    Text(
-                        listOf(slot.course.venue, if (slot.isLab) "Lab" else "Theory").filter { it.isNotBlank() }.joinToString(" · "),
-                        style = style(inks.text, 12.sp),
-                        maxLines = 1,
-                    )
-                    slot.attendance?.let { row ->
-                        Text(
-                            "${row.percent}% · ${row.hint(snap.remainingFor(row, now))}",
-                            style = style(if (row.atRisk && !snap.attendanceExempt) inks.a else inks.b, 12.sp, bold = true),
-                            maxLines = 1,
-                        )
+    DavitWidgetTheme(s) {
+        val size = LocalSize.current
+        val isCompact = size.height < 140.dp
+        Column(
+            GlanceModifier
+                .fillMaxSize()
+                .cornerRadius(24.dp)
+                .background(GlanceTheme.colors.widgetBackground)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .clickable(actionStartActivity<MainActivity>()),
+        ) {
+            Row(
+                GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("daVIT", style = style(GlanceTheme.colors.primary, 14.sp, bold = true))
+                Spacer(GlanceModifier.defaultWeight())
+                s.snapshot?.let { snap ->
+                    Row(
+                        GlanceModifier
+                            .cornerRadius(12.dp)
+                            .background(GlanceTheme.colors.tertiaryContainer)
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
+                    ) {
+                        Text(ago(snap.syncedAt), style = style(GlanceTheme.colors.onTertiaryContainer, 11.sp))
                     }
                 }
-                Spacer(GlanceModifier.defaultWeight())
-                Text(footer(s, now), style = style(inks.text.copy(alpha = 0.75f), 11.sp), maxLines = 1)
+            }
+            Spacer(GlanceModifier.height(8.dp))
+            val snap = s.snapshot
+            when {
+                !s.signedIn -> WidgetInfoCard(
+                    title = "Sign in to daVIT",
+                    subtitle = "Open the app to connect your account and view your timetable.",
+                )
+                snap == null -> WidgetInfoCard(
+                    title = "Waiting for First Sync",
+                    subtitle = "Syncing your timetable data...",
+                )
+                else -> {
+                    val plan = planFor(weekOf(snap), now, snap.calendar, s.followCalendar)
+                    val slot = plan.now ?: plan.next
+                    if (slot == null) {
+                        val semesterOver = s.followCalendar && snap.calendar?.isSemesterOver(now.toLocalDate()) == true
+                        WidgetInfoCard(
+                            title = if (semesterOver) "Semester Ended" else "No Classes Scheduled",
+                            subtitle = if (semesterOver) "No more instructional days scheduled for this semester." else "No upcoming classes found in your timetable.",
+                        )
+                    } else {
+                        val m = slot.meeting
+                        val isNow = plan.now != null
+                        val label = if (isNow) {
+                            "NOW · until ${clock(m.end)}"
+                        } else {
+                            "NEXT · " + when (plan.nextInDays) {
+                                0 -> clock(m.start)
+                                1 -> "tomorrow ${clock(m.start)}"
+                                else -> (plan.nextDate?.dayOfWeek ?: DayOfWeek.of(m.day)).getDisplayName(JavaTextStyle.SHORT, Locale.ENGLISH) + " " + clock(m.start)
+                            }
+                        }
+                        Row(
+                            GlanceModifier
+                                .cornerRadius(8.dp)
+                                .background(if (isNow) GlanceTheme.colors.primaryContainer else GlanceTheme.colors.secondaryContainer)
+                                .padding(horizontal = 8.dp, vertical = 3.dp),
+                        ) {
+                            Text(
+                                label,
+                                style = style(
+                                    if (isNow) GlanceTheme.colors.onPrimaryContainer else GlanceTheme.colors.onSecondaryContainer,
+                                    11.sp,
+                                    bold = true,
+                                ),
+                            )
+                        }
+                        Spacer(GlanceModifier.height(4.dp))
+                        Text(slot.course.courseName, style = style(GlanceTheme.colors.onSurface, 16.sp, bold = true), maxLines = 1)
+                        val venueType = listOf(slot.course.venue, if (slot.isLab) "Lab" else "Theory").filter { it.isNotBlank() }.joinToString(" · ")
+                        if (venueType.isNotBlank()) {
+                            Text(
+                                venueType,
+                                style = style(GlanceTheme.colors.onSurfaceVariant, 12.sp),
+                                maxLines = 1,
+                            )
+                        }
+                        slot.attendance?.let { row ->
+                            Spacer(GlanceModifier.height(4.dp))
+                            val atRisk = row.atRisk && !snap.attendanceExempt
+                            Row(
+                                GlanceModifier
+                                    .cornerRadius(8.dp)
+                                    .background(if (atRisk) GlanceTheme.colors.errorContainer else GlanceTheme.colors.surfaceVariant)
+                                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                            ) {
+                                Text(
+                                    "${row.percent}% · ${row.hint(snap.remainingFor(row, now))}",
+                                    style = style(
+                                        if (atRisk) GlanceTheme.colors.onErrorContainer else GlanceTheme.colors.onSurfaceVariant,
+                                        11.sp,
+                                        bold = true,
+                                    ),
+                                    maxLines = 1,
+                                )
+                            }
+                        }
+                    }
+                    if (!isCompact) {
+                        Spacer(GlanceModifier.defaultWeight())
+                        val foot = footer(s, now)
+                        if (foot.isNotBlank()) {
+                            Row(
+                                GlanceModifier
+                                    .fillMaxWidth()
+                                    .cornerRadius(10.dp)
+                                    .background(GlanceTheme.colors.surfaceVariant)
+                                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                            ) {
+                                Text(
+                                    foot,
+                                    style = style(GlanceTheme.colors.onSurfaceVariant, 11.sp),
+                                    maxLines = 1,
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -186,6 +261,3 @@ internal fun ago(at: Long): String {
         else -> "${min / (24 * 60)} d ago"
     }
 }
-
-internal fun style(color: Color, size: TextUnit, bold: Boolean = false) =
-    TextStyle(color = ColorProvider(color), fontSize = size, fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal)
