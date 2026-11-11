@@ -3,6 +3,7 @@ package dev.medriid.davit.design
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -13,7 +14,9 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * The one callout per screen (`.offer`): an ink-A block turned -1.6 degrees, with a
@@ -53,3 +56,16 @@ fun TiltedCard(
 
 /** True inside a [TiltedCard], where text should be ink B rather than the text pull. */
 val LocalOnCard = staticCompositionLocalOf { false }
+
+@Preview(showBackground = true)
+@Composable
+private fun TiltedCardPreview() {
+    RisoTheme {
+        Box(modifier = Modifier.padding(24.dp)) {
+            TiltedCard(modifier = Modifier.fillMaxWidth()) {
+                Heading("Special Offer", fontSize = 28.sp)
+            }
+        }
+    }
+}
+

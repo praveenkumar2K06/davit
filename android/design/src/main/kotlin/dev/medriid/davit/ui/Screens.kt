@@ -29,12 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.data.ago
 import dev.medriid.davit.design.DrumIndicator
 import dev.medriid.davit.design.Gutter
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.LocalInks
+import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.RouteHead
 import dev.medriid.davit.design.rememberHaptics
@@ -185,3 +187,22 @@ fun ToggleRow(title: String, body: String, on: Boolean, onToggle: () -> Unit) {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun ToggleRowPreview() {
+    RisoTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            GroupLabel("Settings Group")
+            ToggleRow(
+                title = "Dark Mode",
+                body = "Use night print theme",
+                on = true,
+                onToggle = {},
+            )
+            Hairline()
+            SectionTitle("Section Title")
+        }
+    }
+}
+

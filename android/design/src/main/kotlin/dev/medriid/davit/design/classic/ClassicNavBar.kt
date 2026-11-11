@@ -1,5 +1,6 @@
 package dev.medriid.davit.design.classic
 
+import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,11 +27,15 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.design.IconGlyph
 import dev.medriid.davit.design.Inks
+import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.NavItem
+import dev.medriid.davit.design.RisoIcon
+import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.Rule
 
@@ -88,3 +93,20 @@ internal fun ClassicNavBar(items: List<NavItem>, selected: Int, onSelect: (Int) 
         }
     }
 }
+
+@Preview(name = "Light Mode", showBackground = true)
+@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Composable
+private fun ClassicNavBarPreview() {
+    RisoTheme {
+        val inks = LocalInks.current
+        val items = listOf(
+            NavItem("Home", RisoIcon.Home),
+            NavItem("Today", RisoIcon.Today),
+            NavItem("Academics", RisoIcon.Academics),
+            NavItem("Profile", RisoIcon.Profile),
+        )
+        ClassicNavBar(items = items, selected = 0, onSelect = {}, inks = inks)
+    }
+}
+

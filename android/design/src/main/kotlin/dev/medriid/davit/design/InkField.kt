@@ -3,6 +3,7 @@ package dev.medriid.davit.design
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +17,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,13 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.medriid.davit.design.material.MaterialField
 
 /**
  * Labelled text field: a 56 dp paper box with a 2 dp ink border that thickens to the
@@ -58,44 +57,16 @@ fun InkField(
 
     when (inks.style) {
         AppStyle.Material3 -> {
-            TextField(
+            MaterialField(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = modifier.fillMaxWidth(),
                 enabled = enabled,
-                singleLine = true,
-                label = { Text(label) },
-                textStyle = RisoType.body.copy(fontSize = 17.sp, color = inks.text),
-                visualTransformation = if (secret && !reveal) PasswordVisualTransformation() else VisualTransformation.None,
+                label = label,
+                search = search,
+                secret = secret,
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
-                leadingIcon = if(search) {
-                    {
-                        SearchGlyph()
-                    }
-                } else null,
-                trailingIcon = if (secret) {
-                    {
-                        Box(
-                            Modifier
-                                .clickable(role = Role.Button) { reveal = !reveal }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            BasicText(
-                                if (reveal) "HIDE" else "SHOW",
-                                style = RisoType.label.copy(color = inks.a),
-                            )
-                        }
-                    }
-                } else null,
-                shape = MaterialShape,
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent
-                )
+                inks = inks
             )
         }
         AppStyle.Editorial, AppStyle.Soft, AppStyle.Glass, AppStyle.Classic -> {
@@ -159,3 +130,29 @@ fun SearchGlyph() {
         drawLine(inks.text, androidx.compose.ui.geometry.Offset(size.width * 0.66f, size.height * 0.66f), androidx.compose.ui.geometry.Offset(size.width * 0.92f, size.height * 0.92f), w, androidx.compose.ui.graphics.StrokeCap.Round)
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun InkFieldPreview() {
+    RisoTheme {
+        var text by remember { mutableStateOf("") }
+        var secretText by remember { mutableStateOf("password") }
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            InkField(
+                value = text,
+                onValueChange = { text = it },
+                label = "Username",
+            )
+            InkField(
+                value = secretText,
+                onValueChange = { secretText = it },
+                label = "Password",
+                secret = true,
+            )
+        }
+    }
+}
+

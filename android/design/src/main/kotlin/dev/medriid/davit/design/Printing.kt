@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -243,3 +244,22 @@ fun loop(on: Boolean, millis: Int, label: String): androidx.compose.runtime.Stat
     val t = rememberInfiniteTransition(label = label)
     return t.animateFloat(0f, 1f, infiniteRepeatable(tween(millis, easing = LinearEasing), RepeatMode.Restart), label = label)
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun PrintingPreview() {
+    RisoTheme {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            DrumIndicator(pull = 1f, refreshing = true)
+            LoadingPlate(lines = 3)
+            PrintingSheet(
+                stages = listOf("Downloading timetable", "Parsing courses", "Saving database"),
+                current = 1,
+            )
+        }
+    }
+}
+

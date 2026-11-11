@@ -1,11 +1,14 @@
 package dev.medriid.davit.design.editorial
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -22,10 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.Inks
+import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoMotion
+import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 
 @Composable
@@ -58,3 +65,21 @@ internal fun EditorialButton(
         BasicText("→", Modifier.offset(x = nudge), style = RisoType.button.copy(color = ink, fontSize = 18.sp))
     }
 }
+
+@Preview(name = "Light Mode", showBackground = true)
+@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Composable
+private fun EditorialButtonPreview() {
+    val theme = InkPairs.Editorial
+    RisoTheme(inks = theme) {
+        val inks = LocalInks.current
+        Column(
+            modifier = Modifier.background(color = inks.surface).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            EditorialButton("Editorial Button", onClick = {}, inks = inks)
+            EditorialButton("Quiet Button", onClick = {}, quiet = true, inks = inks)
+        }
+    }
+}
+

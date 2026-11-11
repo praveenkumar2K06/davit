@@ -1,15 +1,18 @@
 package dev.medriid.davit.design
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 /** Section divider (`.rule`): a 2 dp line over a 1 dp line, 6 dp apart overall. */
@@ -23,11 +26,7 @@ fun Rule(modifier: Modifier = Modifier) {
         }
         AppStyle.Material3 -> {
             // Material 3: official HorizontalDivider component.
-            HorizontalDivider(
-                modifier = modifier.fillMaxWidth(),
-                thickness = 1.dp,
-                color = inks.rule,
-            )
+            HorizontalDivider()
         }
         AppStyle.Soft, AppStyle.Glass -> {
             // Soft / Glass: one hairline.
@@ -55,3 +54,14 @@ fun Rule(modifier: Modifier = Modifier) {
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun RulePreview() {
+    RisoTheme {
+        Box(modifier = Modifier.padding(16.dp)) {
+            Rule()
+        }
+    }
+}
+

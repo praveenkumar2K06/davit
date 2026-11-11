@@ -1,7 +1,12 @@
 package dev.medriid.davit.design
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import dev.medriid.davit.design.classic.ClassicButton
 import dev.medriid.davit.design.editorial.EditorialButton
 import dev.medriid.davit.design.glass.GlassButton
@@ -23,10 +28,26 @@ fun InkButton(
 ) {
     val inks = LocalInks.current
     when (inks.style) {
-        AppStyle.Material3 -> MaterialButton(text, onClick, modifier, enabled, quiet, fillWidth, inks)
+        AppStyle.Material3 -> MaterialButton(text, onClick, modifier, enabled, quiet, fillWidth)
         AppStyle.Editorial -> EditorialButton(text, onClick, modifier, enabled, quiet, fillWidth, inks)
         AppStyle.Soft -> SoftButton(text, onClick, modifier, enabled, quiet, fillWidth, inks)
         AppStyle.Glass -> GlassButton(text, onClick, modifier, enabled, quiet, fillWidth, inks)
         AppStyle.Classic -> ClassicButton(text, onClick, modifier, enabled, quiet, fillWidth, inks)
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun InkButtonPreview() {
+    RisoTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            InkButton("Filled Button", onClick = {})
+            InkButton("Quiet Button", onClick = {}, quiet = true)
+            InkButton("Disabled Button", onClick = {}, enabled = false)
+        }
+    }
+}
+

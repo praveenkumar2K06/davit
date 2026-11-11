@@ -1,5 +1,6 @@
 package dev.medriid.davit.design.classic
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.snap
@@ -8,7 +9,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -22,11 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.design.Inks
+import dev.medriid.davit.design.LocalInks
 import dev.medriid.davit.design.RisoMotion
+import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 import dev.medriid.davit.design.rememberMotionEnabled
 
@@ -99,6 +105,22 @@ internal fun ClassicButton(
                 text.uppercase(),
                 style = RisoType.button.copy(color = if (enabled) textColor else inks.rule),
             )
+        }
+    }
+}
+
+@Preview(name = "Light Mode", showBackground = true)
+@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Composable
+private fun ClassicButtonPreview() {
+    RisoTheme {
+        val inks = LocalInks.current
+        Column(
+            modifier = Modifier.background(color = inks.surface).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            ClassicButton("Classic Button", onClick = {}, inks = inks)
+            ClassicButton("Quiet Button", onClick = {}, quiet = true, inks = inks)
         }
     }
 }

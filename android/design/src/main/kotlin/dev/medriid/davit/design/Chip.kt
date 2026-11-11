@@ -3,6 +3,7 @@ package dev.medriid.davit.design
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,11 +12,16 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.design.classic.ClassicChip
@@ -90,4 +96,35 @@ fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun InkChipPreview() {
+    RisoTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            InkChip("Outline Chip")
+            InkChip("Solid Chip", solid = true)
+            InkChip("Clickable Chip", onClick = {})
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChoiceRowPreview() {
+    RisoTheme {
+        var selected by remember { mutableIntStateOf(0) }
+        Column(modifier = Modifier.padding(16.dp)) {
+            ChoiceRow(
+                options = listOf("Option 1", "Option 2", "Option 3"),
+                selected = selected,
+                onSelect = { selected = it },
+            )
+        }
+    }
+}
+
 

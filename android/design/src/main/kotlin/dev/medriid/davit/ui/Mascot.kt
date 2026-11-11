@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.design.ChoiceRow
@@ -39,6 +40,7 @@ import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.InkText
 import dev.medriid.davit.design.Inks
 import dev.medriid.davit.design.LocalInks
+import dev.medriid.davit.design.RisoTheme
 
 /**
  * The profile mascot: a little printed creature (humanoid, not human) you dress up in
@@ -295,4 +297,28 @@ fun MascotEditor(mascot: Mascot, onChange: (Mascot) -> Unit) {
     InkText("Extra", label = true)
     Spacer(Modifier.height(4.dp))
     ChoiceRow(mascot.extraNames, mascot.extra) { onChange(mascot.copy(extra = it)) }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MascotAvatarPreview() {
+    RisoTheme {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            MascotAvatar(mascot = Mascot(female = false), size = 80.dp)
+            MascotAvatar(mascot = Mascot(female = true, hair = 1, extra = 1), size = 80.dp)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MascotEditorPreview() {
+    RisoTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MascotEditor(mascot = Mascot(), onChange = {})
+        }
+    }
 }

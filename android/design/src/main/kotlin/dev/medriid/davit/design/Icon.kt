@@ -1,6 +1,9 @@
 package dev.medriid.davit.design
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -8,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 enum class RisoIcon(@DrawableRes val resId: Int) {
@@ -55,3 +59,20 @@ fun IconGlyph(icon: RisoIcon, color: Color = LocalContentColor.current, modifier
 }
 
 data class NavItem(val label: String, val icon: RisoIcon)
+
+@Preview(showBackground = true)
+@Composable
+private fun IconGlyphPreview() {
+    RisoTheme {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            IconGlyph(RisoIcon.Home)
+            IconGlyph(RisoIcon.Today)
+            IconGlyph(RisoIcon.Attendance)
+            IconGlyph(RisoIcon.Settings)
+        }
+    }
+}
+

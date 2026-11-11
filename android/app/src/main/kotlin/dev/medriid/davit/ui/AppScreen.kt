@@ -28,18 +28,16 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -135,7 +133,7 @@ fun AppScreen(repo: Repo, locked: Boolean = false, onUnlock: () -> Unit = {}) {
             tab.intValue = 0
         }
     }
-    RisoTheme(inks) {
+    RisoTheme(inks = inks) {
         // Switching style rebuilds everything, so every text picks up its type.
         key(inks.style) {
         Grain(Modifier.fillMaxSize()) {
@@ -185,8 +183,8 @@ private fun Main(state: UiState, repo: Repo, tabState: MutableIntState, stack: S
             Column(Modifier.fillMaxSize()) {
                 // The display card on Home only; every other tab and screen gets the plain bar.
                 // Soft Home draws its own hello in place of the bar.
-                if ((LocalInks.current.soft || LocalInks.current.editorial) && tab == 0 && stack.isEmpty()) Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
-                else TopBar(state, mascot, repo.bannerPhoto, card = tab == 0 && stack.isEmpty(), onSync = repo::sync, onProfile = { nav.go(Route.Settings) }, onMore = { nav.go(Route.Campus) }, modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars), onHome = { nav.tab(0) })
+                if ((LocalInks.current.soft || LocalInks.current.editorial) && tab == 0 && stack.isEmpty()) Spacer(Modifier.statusBarsPadding())
+                else TopBar(state, mascot, repo.bannerPhoto, card = tab == 0 && stack.isEmpty(), onSync = repo::sync, onProfile = { nav.go(Route.Settings) }, onMore = { nav.go(Route.Campus) }, modifier = Modifier.statusBarsPadding(), onHome = { nav.tab(0) })
                 AnimatedVisibility(state.error != null) {
                     ErrorBanner(state.error.orEmpty(), onRetry = repo::sync, onDismiss = repo::dismissError)
                 }
@@ -219,7 +217,7 @@ private fun Main(state: UiState, repo: Repo, tabState: MutableIntState, stack: S
                 RisoNavBar(Tabs, tab, {
                     if (it != tab || stack.isNotEmpty()) haptics.tick()
                     nav.tab(it)
-                }, Modifier.windowInsetsPadding(WindowInsets.navigationBars))
+                }, Modifier.navigationBarsPadding())
             }
             // The scanner covers everything, bars included, while it's open.
             ScannerHost()

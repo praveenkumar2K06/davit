@@ -1,11 +1,16 @@
 package dev.medriid.davit.design
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.medriid.davit.design.classic.ClassicCard
@@ -43,3 +48,22 @@ fun InkCard(
         AppStyle.Classic -> ClassicCard(modifier, onClick, kind, fill, plate, plateOffset, contentPadding, inks, content)
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun InkCardPreview() {
+    RisoTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            InkCard {
+                BasicText("Static InkCard")
+            }
+            InkCard(onClick = {}, kind = Kind.Classes) {
+                BasicText("Clickable InkCard - Classes Kind")
+            }
+        }
+    }
+}
+

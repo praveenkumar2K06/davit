@@ -1,6 +1,8 @@
 package dev.medriid.davit.design
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +15,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -59,3 +62,14 @@ private val Dots = listOf(
     Triple(54f, 68f, 0.71f), Triple(61f, 68f, 1.13f), Triple(68f, 68f, 1.51f), Triple(75f, 68f, 1.80f),
     Triple(50.5f, 75f, 0.64f), Triple(57.5f, 75f, 1.12f), Triple(64.5f, 75f, 1.58f), Triple(71.5f, 75f, 2.02f), Triple(78.5f, 75f, 2.35f),
 )
+
+@Preview(showBackground = true)
+@Composable
+private fun SealPreview() {
+    RisoTheme {
+        Box(modifier = Modifier.padding(16.dp)) {
+            Seal(size = 64.dp)
+        }
+    }
+}
+

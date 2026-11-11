@@ -3,12 +3,18 @@ package dev.medriid.davit.design
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -20,6 +26,7 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -137,3 +144,34 @@ private suspend fun PointerInputScope.drag(at: (Offset) -> Unit, done: () -> Uni
         done()
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun ColorWheelPreview() {
+    RisoTheme {
+        var hue by remember { mutableFloatStateOf(180f) }
+        var sat by remember { mutableFloatStateOf(0.7f) }
+        var valState by remember { mutableFloatStateOf(0.9f) }
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            ColorWheel(
+                hue = hue,
+                saturation = sat,
+                value = valState,
+                onChange = { h, s ->
+                    hue = h
+                    sat = s
+                },
+            )
+            ValueSlider(
+                hue = hue,
+                saturation = sat,
+                value = valState,
+                onChange = { valState = it },
+            )
+        }
+    }
+}
+

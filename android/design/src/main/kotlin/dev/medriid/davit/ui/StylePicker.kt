@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.medriid.davit.design.AppStyle
@@ -33,6 +34,7 @@ import dev.medriid.davit.design.InkPairs
 import dev.medriid.davit.design.Inks
 import dev.medriid.davit.design.Kind
 import dev.medriid.davit.design.LocalInks
+import dev.medriid.davit.design.RisoTheme
 import dev.medriid.davit.design.RisoType
 
 /**
@@ -233,3 +235,17 @@ private fun DrawScope.drawGlass(p: Inks) {
     drawRoundRect(p.glassEdge, at2, s2, rCard, style = Stroke(1.2f * x))
     drawRoundRect(p.text, Offset(16 * x, 62 * y), Size(30 * x, 6 * y), CornerRadius(3 * x))
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun StylePickerPreview() {
+    RisoTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            StylePicker(
+                style = AppStyle.Classic,
+                onPick = {},
+            )
+        }
+    }
+}
+

@@ -2,6 +2,7 @@ package dev.medriid.davit.design
 
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -10,6 +11,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.tooling.preview.Preview
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -84,3 +86,13 @@ fun TimePickerModal(
         TimePicker(state = timePickerState)
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+private fun DatePickerModalPreview() {
+    RisoTheme {
+        DatePicker(state = rememberDatePickerState())
+    }
+}
+

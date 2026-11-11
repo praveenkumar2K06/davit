@@ -4,6 +4,9 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,6 +19,8 @@ import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import kotlin.random.Random
 
 /**
@@ -95,3 +100,14 @@ private fun grainBrush(size: Int = 192): ShaderBrush {
     val bitmap = Bitmap.createBitmap(pixels, size, size, Bitmap.Config.ARGB_8888)
     return ShaderBrush(ImageShader(bitmap.asImageBitmap(), TileMode.Repeated, TileMode.Repeated))
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun GrainPreview() {
+    RisoTheme {
+        Grain(modifier = Modifier.fillMaxSize()) {
+            BasicText("Grain Background Content", modifier = Modifier.padding(16.dp))
+        }
+    }
+}
+

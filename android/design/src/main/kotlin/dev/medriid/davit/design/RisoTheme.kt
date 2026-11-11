@@ -1,6 +1,10 @@
 package dev.medriid.davit.design
 
 import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,50 +19,61 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /** Provides the ink pair to everything below. Wrap the root in [Grain] for paper + grain. */
 @Composable
-fun RisoTheme(inks: Inks = InkPairs.all.first(), content: @Composable () -> Unit) {
+fun RisoTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    inks: Inks = if (darkTheme) InkPairs.night.first() else InkPairs.all.first(),
+    content: @Composable () -> Unit,
+) {
+    val activeInks = if (darkTheme && !inks.dark) {
+        InkPairs.night.firstOrNull { it.name == inks.name } ?: inks.copy(dark = true)
+    } else inks
+
     // The type follows the look; set before anything below composes.
-    RisoType.soft = inks.soft
-    RisoType.editorial = inks.editorial
-    RisoType.material = inks.material
+    RisoType.soft = activeInks.soft
+    RisoType.editorial = activeInks.editorial
+    RisoType.material = activeInks.material
 
     val context = LocalContext.current
-    val dynamicColor = inks.material && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val dynamicColor = activeInks.material && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val dynamicScheme = if (dynamicColor) {
         runCatching {
-            if (inks.dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (activeInks.dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }.getOrNull()
     } else null
 
-    val colorScheme = dynamicScheme ?: if (inks.dark) {
+    val colorScheme = dynamicScheme ?: if (activeInks.dark) {
         darkColorScheme(
-            primary = inks.a,
-            onPrimary = inks.onA,
-            surface = inks.paper,
-            onSurface = inks.text,
-            surfaceVariant = inks.surface,
-            onSurfaceVariant = inks.text,
-            outline = inks.rule,
+            primary = activeInks.a,
+            onPrimary = activeInks.onA,
+            surface = activeInks.paper,
+            onSurface = activeInks.text,
+            surfaceVariant = activeInks.surface,
+            onSurfaceVariant = activeInks.text,
+            outline = activeInks.rule,
         )
     } else {
         lightColorScheme(
-            primary = inks.a,
-            onPrimary = inks.onA,
-            surface = inks.paper,
-            onSurface = inks.text,
-            surfaceVariant = inks.surface,
-            onSurfaceVariant = inks.text,
-            outline = inks.rule,
+            primary = activeInks.a,
+            onPrimary = activeInks.onA,
+            surface = activeInks.paper,
+            onSurface = activeInks.text,
+            surfaceVariant = activeInks.surface,
+            onSurfaceVariant = activeInks.text,
+            outline = activeInks.rule,
         )
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
         content = {
-            CompositionLocalProvider(LocalInks provides inks, content = content)
+            CompositionLocalProvider(LocalInks provides activeInks, content = content)
         },
     )
 }
@@ -125,3 +140,19 @@ fun Heading(
         overflow = TextOverflow.Visible,
     )
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun RisoThemeTextPreview() {
+    RisoTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Heading("Main Heading", fontSize = 28.sp)
+            InkText("Standard body ink text content goes here.")
+            InkText("Label Ink Text", label = true)
+        }
+    }
+}
+
